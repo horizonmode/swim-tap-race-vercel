@@ -60,10 +60,17 @@ test('player join on one instance updates a presenter on another, including imme
   await settle();
   assert.equal(player.messages.filter(m => m.type === 'gameState').at(-1).race.state, 'countdown');
   player.close();
+  await settle();
+  assert.equal(presenter.messages.filter(m => m.type === 'gameState').at(-1).players.length, 0);
   const reconnected = socket(b);
   reconnected.command({ type: 'join', playerToken: TOKEN, playerId: 'one', playerToken: 'test-player-token-0000000000000000', name: 'Swimmer' });
   await settle();
-  assert.equal(reconnected.messages.find(m => m.type === 'joinResult').ok, true);
+  assert.equal(reconnected.messages.find(m => m.type === 'joinResult').ok, false);
+  presenter.command({ type: 'presenter:reset' });
+  await settle();
+  reconnected.command({ type: 'join', playerToken: TOKEN, playerId: 'one', playerToken: 'test-player-token-0000000000000000', name: 'Swimmer', swimmer: 'cat' });
+  await settle();
+  assert.equal(reconnected.messages.filter(m => m.type === 'joinResult').at(-1).ok, true);
   assert.equal(reconnected.messages.filter(m => m.type === 'gameState').at(-1).players[0].swimmer, 'cat');
   // Finish the race, then reset from the presenter on the other instance.
   const store = storage().store;

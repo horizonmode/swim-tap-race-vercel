@@ -7,7 +7,9 @@ const nameInput = document.getElementById("name");
 const joinError = document.getElementById("joinError");
 const playerName = document.getElementById("playerName");
 const raceStatus = document.getElementById("raceStatus");
+const playerCountdown = document.getElementById("playerCountdown");
 const tapButton = document.getElementById("tapButton");
+const resetPlayerBtn = document.getElementById("resetPlayerBtn");
 const hint = document.getElementById("hint");
 const miniSwimmer = document.getElementById("miniSwimmer");
 
@@ -23,6 +25,28 @@ let joinedName = "";
 let selectedSwimmer = normalizeSwimmer(sessionStorage.getItem("swim-character"));
 let strokeTimer;
 let lastDistance = 0;
+let countdownTimer;
+
+function stopCountdown() {
+  clearInterval(countdownTimer);
+  countdownTimer = null;
+  playerCountdown.classList.add("hidden");
+}
+
+function startCountdown(countdownEndsAt) {
+  stopCountdown();
+  const tick = () => {
+    const remaining = Math.max(0, countdownEndsAt - Date.now());
+    if (!remaining) {
+      stopCountdown();
+      return;
+    }
+    playerCountdown.textContent = Math.max(1, Math.ceil(remaining / 1000));
+    playerCountdown.classList.remove("hidden");
+  };
+  tick();
+  countdownTimer = setInterval(tick, 100);
+}
 function renderMySwimmer(character) {
   miniSwimmer.innerHTML = `<span class="splash"></span>${swimmerMarkup(character)}`;
   miniSwimmer.dataset.swimmer = normalizeSwimmer(character);
@@ -31,6 +55,20 @@ function animateStroke() {
   miniSwimmer.classList.add("moving");
   clearTimeout(strokeTimer);
   strokeTimer = setTimeout(() => miniSwimmer.classList.remove("moving"), 420);
+}
+
+function resetPlayer() {
+  send("leave", { playerToken });
+  stopCountdown();
+  myId = null;
+  joinedName = "";
+  lastDistance = 0;
+  tapButton.disabled = true;
+  gameCard.classList.add("hidden");
+  joinCard.classList.remove("hidden");
+  joinError.textContent = "";
+  raceStatus.textContent = "Waiting…";
+  hint.textContent = "Join the next race.";
 }
 
 const choices = document.getElementById("swimmerChoices");
@@ -126,21 +164,25 @@ function connect() {
       miniSwimmer.style.left = `calc(${progress}% - ${progress * 0.72}px)`;
 
       if (race.state === "lobby") {
+        stopCountdown();
         raceStatus.textContent = "Waiting";
         hint.textContent = "Wait for the presenter to start the race.";
         tapButton.disabled = true;
         tapButton.textContent = "GET READY";
       } else if (race.state === "countdown") {
+        startCountdown(race.countdownEndsAt);
         raceStatus.textContent = "Get ready!";
         hint.textContent = "3… 2… 1…";
         tapButton.disabled = true;
         tapButton.textContent = "READY?";
       } else if (race.state === "racing") {
+        stopCountdown();
         raceStatus.textContent = "GO!";
         hint.textContent = "Tap as fast as you can.";
         tapButton.disabled = false;
         tapButton.textContent = "TAP TO SWIM";
       } else if (race.state === "finished") {
+        stopCountdown();
         const won = race.winnerId === myId;
         raceStatus.textContent = won ? "YOU WIN!" : "Finished";
         hint.textContent = won ? "🏆 Lane legend!" : "Race over — nice swimming.";
@@ -179,5 +221,7 @@ tapButton.addEventListener("pointerdown", (event) => {
   event.preventDefault();
   if (!tapButton.disabled && send("tap")) animateStroke();
 });
+
+resetPlayerBtn.addEventListener("click", resetPlayer);
 
 connect();
