@@ -1083,3 +1083,6 @@ input {
     flex-basis: auto;
   }
 }
+@media (prefers-reduced-motion: reduce) {
+  .swimmer-wrap { transition-duration: 0ms !important; }
+}

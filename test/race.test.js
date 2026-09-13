@@ -320,3 +320,38 @@ test('presenter keys accept a single character, words and phrases while rejectin
   }
   await settle();
 });
+
+test('delayed batches count eligible received taps exactly once, independent of processing cooldown', async () => {
+  const store = createMemoryStore().store;
+  await store.update({ type: 'join', playerToken: TOKEN, playerId: 'batch', name: 'Batch' });
+  await store.update({ type: 'presenter:start' }, null, 1000);
+  const batch = taps => ({ type: 'tapBatch', taps, startedAt: 4000, playerToken: TOKEN });
+  await store.update(batch([4000, 4060, 4120]), 'batch', 5000);
+  await store.update(batch([4180, 4240, 4300]), 'batch', 5025);
+  assert.ok(Math.abs((await store.read()).players[0].distance - 7.2) < 0.0001);
+  await store.update(batch([4180, 4240, 4300]), 'batch', 5026);
+  assert.ok(Math.abs((await store.read()).players[0].distance - 7.2) < 0.0001);
+  await store.update(batch([4301, 4302, 4303]), 'batch', 5100);
+  assert.ok(Math.abs((await store.read()).players[0].distance - 7.2) < 0.0001);
+  await store.update({ type: 'presenter:reset' }, null, 6000);
+  await store.update({ type: 'presenter:start' }, null, 6000);
+  await store.update(batch([9000, 9060]), 'batch', 10000);
+  assert.equal((await store.read()).players[0].distance, 0);
+});
+
+test('closing every connection preserves completed scoreboard until explicitly cleared', async t => {
+  const memory = createMemoryStore();
+  const server = createRaceServer(() => memory, undefined, { presenterKey: KEY });
+  t.after(() => server.close());
+  const player = socket(server);
+  player.command({ type: 'join', playerToken: TOKEN, playerId: 'finish', name: 'Finish' });
+  await settle();
+  await memory.store.update({ type: 'presenter:start' }, null, 1000);
+  for (let i = 0; i < 84; i++) await memory.store.update({ type: 'tap', playerToken: TOKEN }, 'finish', 4000 + i * 60);
+  player.close();
+  await settle();
+  const result = await memory.store.read();
+  assert.equal(result.race.state, 'finished');
+  assert.equal(result.players[0].id, 'finish');
+  assert.equal(result.players[0].distance, 100);
+});

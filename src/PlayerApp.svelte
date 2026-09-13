@@ -195,9 +195,9 @@
         <legend>Pick your swimmer</legend>
         <div class="swimmer-choices">
           {#each swimmerOptions as option}
-            <label class="swimmer-choice">
+            <label class="swimmer-choice" title={option.name}>
               <input type="radio" name="swimmer" value={option.id} aria-label={option.name} bind:group={selectedSwimmer} on:change={() => sessionStorage.setItem("swim-character", selectedSwimmer)}>
-              <span class="swimmer-option"><span aria-hidden="true">{@html swimmerMarkup(option.id)}</span></span>
+              <span class="swimmer-option"><span aria-hidden="true">{@html swimmerMarkup(option.id)}</span>{#if option.id === "esme"}<span>Esme</span>{/if}</span>
             </label>
           {/each}
         </div>

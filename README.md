@@ -82,3 +82,9 @@ In `lib/race-state.js` for deployment (and `local-server.js` for local play):
 - Existing players created before token authentication cannot be claimed with their public IDs. After this upgrade, unlock the presenter, **Clear players**, then reload both pages and rejoin.
 
 Use HTTPS/WSS for the deployed event. Local HTTP is intended for a trusted development Wi-Fi network; it does not encrypt the presenter key or player tokens in transit. Redis configuration and credentials remain server-side.
+
+## Race movement and reconnects
+
+Tap batches retain their server-received timestamps, apply the cooldown to those timestamps, and process at most three taps per update. Display transitions smooth delayed updates. Disconnecting keeps a player's lane, progress, and final result. Leaving in the lobby removes the player; during a race the participant stays on the board until the presenter clears players. Use **Clear players** between simulation runs to remove retained test swimmers.
+
+Local static serving is restricted to built pages and assets inside `dist`; rebuild with `npm run build` after client changes. Presenter authentication survives socket reconnects in page memory.
