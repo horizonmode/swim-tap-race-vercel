@@ -1,20 +1,18 @@
 <script>
   import { motionDuration } from "./swimmer-motion.js";
   import { onMount } from "svelte";
-  import { createResults } from "../results.js";
-  import { swimmerOptions, normalizeSwimmer, swimmerMarkup } from "../swimmers.js";
+  import { normalizeSwimmer } from "../swimmers.js";
+  import JoinCard from "./components/JoinCard.svelte";
+  import PlayerRaceCard from "./components/PlayerRaceCard.svelte";
 
   const playerId = sessionStorage.getItem("swim-player-id") || crypto.randomUUID();
   sessionStorage.setItem("swim-player-id", playerId);
   const playerToken = sessionStorage.getItem("swim-player-token") || crypto.randomUUID();
   sessionStorage.setItem("swim-player-token", playerToken);
 
-  let joinCard;
-  let gameCard;
   let ws;
   let reconnectTimer;
   let countdownTimer;
-  let results;
   let myId = null;
   let joinedName = sessionStorage.getItem("swim-player-name") || "";
   let name = joinedName;
@@ -22,7 +20,6 @@
   let hint = "Wait for the presenter to start the race.";
   let raceStatus = "Waiting…";
   let selectedSwimmer = normalizeSwimmer(sessionStorage.getItem("swim-character"));
-  let currentSwimmer = selectedSwimmer;
   let race = null;
   let myPlayer = null;
   let countdownValue = null;
@@ -31,18 +28,14 @@
   let moving = false;
   let strokeTimer;
   let boost = null;
-  let boostClock = Date.now();
-  let boostClockTimer;
   let connected = false;
-  $: boostVisible = connected && myId && race?.state === "racing" && boost && !boost.used && boostClock >= boost.opensAt && boostClock < boost.expiresAt;
+  let players = [];
   function claimBoost() {
-    if (boostVisible && send("boost", { boostId: boost.id })) {
+    if (connected && myId && race?.state === "racing" && boost && !boost.used && Date.now() >= boost.opensAt && Date.now() < boost.expiresAt && send("boost", { boostId: boost.id })) {
       boost = { ...boost, used: true };
       animateStroke();
     }
   }
-
-  $: progress = Math.max(0, Math.min(100, myPlayer?.distance || 0));
 
   function wsUrl() {
     const protocol = location.protocol === "https:" ? "wss:" : "ws:";
@@ -82,18 +75,16 @@
 
   function handleGameState(message) {
     race = message.race;
+    players = message.players;
     if (!myId) return;
     myPlayer = message.players.find((player) => player.id === myId) || null;
     if (!myPlayer) {
       myId = null;
       joinedName = "";
-      gameCard.classList.add("hidden");
-      joinCard.classList.remove("hidden");
       hint = "Join the next race.";
       return;
     }
 
-    currentSwimmer = normalizeSwimmer(myPlayer.swimmer);
     if (race.state === "racing" && myPlayer.distance > lastDistance) animateStroke();
     if (race.state !== "racing") {
       clearTimeout(strokeTimer);
@@ -144,11 +135,8 @@
         joinError = "";
         myId = message.id;
         sessionStorage.setItem("swim-player-name", joinedName);
-        gameCard.classList.remove("hidden");
-        joinCard.classList.add("hidden");
       } else if (message.type === "gameState") {
         handleGameState(message);
-        results?.({ race: message.race, players: message.players }, myId);
       }
     });
     ws.addEventListener("close", () => {
@@ -181,74 +169,26 @@
     sessionStorage.removeItem("swim-player-name");
     myPlayer = null;
     lastDistance = 0;
-    gameCard.classList.add("hidden");
-    joinCard.classList.remove("hidden");
     hint = "Join the next race.";
   }
 
   onMount(() => {
     document.body.className = "player-page";
-    results = createResults(gameCard);
-    boostClockTimer = setInterval(() => { boostClock = Date.now(); }, 100);
     connect();
     return () => {
       clearTimeout(reconnectTimer);
       clearInterval(countdownTimer);
       clearTimeout(strokeTimer);
-      clearInterval(boostClockTimer);
       ws?.close();
     };
   });
 </script>
 
 <main class="player-shell">
-  <section bind:this={joinCard} class="card">
-    <div class="big-emoji">🏊</div>
-    <h1>Swim Tap Race</h1>
-    <p>Enter your name, then tap as fast as you can when the race starts.</p>
-    <form on:submit|preventDefault={join}>
-      <label for="name">Your name</label>
-      <input id="name" bind:value={name} maxlength="18" autocomplete="nickname" placeholder="e.g. Seb">
-      <fieldset class="swimmer-picker">
-        <legend>Pick your swimmer</legend>
-        <div class="swimmer-choices">
-          {#each swimmerOptions as option}
-            <label class="swimmer-choice" title={option.name}>
-              <input type="radio" name="swimmer" value={option.id} aria-label={option.name} bind:group={selectedSwimmer} on:change={() => sessionStorage.setItem("swim-character", selectedSwimmer)}>
-              <span class="swimmer-option"><span aria-hidden="true">{@html swimmerMarkup(option.id)}</span>{#if option.id === "esme"}<span>Esme</span>{/if}</span>
-            </label>
-          {/each}
-        </div>
-      </fieldset>
-      <button class="primary" type="submit">Join race</button>
-      <p class="error" aria-live="polite">{joinError}</p>
-    </form>
-  </section>
-
-  <section bind:this={gameCard} class="card hidden">
-    <div class="status-row">
-      <span>{joinedName}</span>
-      <strong>{raceStatus}</strong>
-    </div>
-    {#if countdownValue}
-      <div class="player-countdown" aria-live="assertive">{countdownValue}</div>
-    {/if}
-    <div class="scoreboard player-pool" aria-label="Your swimming lane">
-      <div class="track mini-track">
-        <div class:moving class="swimmer-wrap mini-swimmer" aria-hidden="true" style={`transition-duration:${motionMs}ms;left:calc(${progress}% - ${progress * 0.72}px)`}>
-          <span class="splash"></span>{@html swimmerMarkup(currentSwimmer)}
-        </div>
-      </div>
-    </div>
-    <button class="tap-button" type="button" disabled={!race || race.state !== "racing"} on:pointerdown|preventDefault={() => send("tap")}>
-      {race?.state === "racing" ? "TAP TO SWIM" : "GET READY"}
-    </button>
-    <div class="boost-slot" aria-live="polite">
-      {#if boostVisible}
-        <button class="boost-button" type="button" on:pointerdown|preventDefault={claimBoost}>⚡ BOOST! <span>+6% · tap now</span></button>
-      {/if}
-    </div>
-    <p id="hint">{hint}</p>
-    <button class="reset-player" type="button" on:click={resetPlayer}>Leave race</button>
-  </section>
+  {#if !myId}
+    <JoinCard bind:name bind:selected={selectedSwimmer} error={joinError} onJoin={join} />
+  {:else}
+    <PlayerRaceCard name={joinedName} status={raceStatus} {hint} countdown={countdownValue} player={myPlayer} {race} {players} {myId} {moving} {motionMs} {boost} {connected}
+      onTap={() => send('tap')} onBoost={claimBoost} onLeave={resetPlayer} />
+  {/if}
 </main>
