@@ -11,8 +11,26 @@ const resetBtn = document.getElementById("resetBtn");
 const clearBtn = document.getElementById("clearBtn");
 const scoreboard = document.querySelector(".scoreboard");
 
-const updateResults = createResults(document.querySelector(".race-main"));
+const updateResults = createResults(document.querySelector(".race-main"), {
+  onDismiss: () => send("presenter:reset")
+});
 
+const presenterLogin = document.getElementById("presenterLogin");
+const presenterKeyInput = document.getElementById("presenterKey");
+const presenterAuthStatus = document.getElementById("presenterAuthStatus");
+let presenterAuthorized = false;
+let presenterKey = ""; // Retained only in this page's memory for reconnects.
+let latestPlayerCount = 0;
+function updateControls() {
+  startBtn.disabled = !presenterAuthorized || latestRace?.state !== "lobby" || latestPlayerCount < 1;
+  resetBtn.disabled = clearBtn.disabled = !presenterAuthorized;
+}
+presenterLogin.addEventListener("submit", event => {
+  event.preventDefault();
+  presenterKey = presenterKeyInput.value;
+  presenterKeyInput.value = "";
+  if (!send("presenter:auth", { key: presenterKey })) presenterAuthStatus.textContent = "Connecting… try again shortly.";
+});
 let latestRace = null;
 let previousRaceState = null;
 let countdownTimer = null;
@@ -184,7 +202,8 @@ function handleGameState({ race, players }) {
   latestRace = race;
   renderPlayers(players, race.state);
 
-  startBtn.disabled = race.state !== "lobby" || players.length < 1;
+  latestPlayerCount = players.length;
+  updateControls();
 
   if (race.state === "countdown") {
     winnerBanner.classList.add("hidden");
@@ -223,11 +242,19 @@ function connect() {
 
   ws.addEventListener("open", () => {
     startBtn.title = "";
+    if (presenterKey) send("presenter:auth", { key: presenterKey });
   });
 
   ws.addEventListener("message", (event) => {
     let message;
     try { message = JSON.parse(event.data); } catch { return; }
+    if (message.type === "presenterAuth") {
+      presenterAuthorized = message.ok;
+      presenterAuthStatus.textContent = message.message;
+      presenterLogin.classList.toggle("hidden", presenterAuthorized);
+      if (!message.ok) presenterKey = "";
+      updateControls();
+    }
     if (message.type === "serverError") {
       connectionStatus.textContent = message.message;
       startBtn.disabled = true;
@@ -237,7 +264,8 @@ function connect() {
   });
 
   ws.addEventListener("close", () => {
-    startBtn.disabled = true;
+    presenterAuthorized = false;
+    updateControls();
     startBtn.title = "Reconnecting to the race server";
     if (!connectionStatus.textContent.includes("setup")) connectionStatus.textContent = "Reconnecting to race…";
     reconnectTimer = setTimeout(connect, 900);

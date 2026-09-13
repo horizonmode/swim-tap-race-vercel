@@ -15,6 +15,8 @@ const updateResults = createResults(gameCard);
 
 const playerId = sessionStorage.getItem("swim-player-id") || crypto.randomUUID();
 sessionStorage.setItem("swim-player-id", playerId);
+const playerToken = sessionStorage.getItem("swim-player-token") || crypto.randomUUID();
+sessionStorage.setItem("swim-player-token", playerToken);
 
 let myId = null;
 let joinedName = "";
@@ -67,7 +69,7 @@ function connect() {
   ws = new WebSocket(wsUrl());
 
   ws.addEventListener("open", () => {
-    if (joinedName) send("join", { playerId, name: joinedName, swimmer: selectedSwimmer });
+    if (joinedName) send("join", { playerId, playerToken, name: joinedName, swimmer: selectedSwimmer });
   });
 
   ws.addEventListener("message", (event) => {
@@ -99,7 +101,15 @@ function connect() {
       if (!myId) return;
       updateResults({ race, players }, myId);
       const me = players.find((p) => p.id === myId);
-      if (!me) return;
+      if (!me) {
+        myId = null;
+        joinedName = "";
+        tapButton.disabled = true;
+        gameCard.classList.add("hidden");
+        joinCard.classList.remove("hidden");
+        hint.textContent = "Join the next race.";
+        return;
+      }
 
       const character = normalizeSwimmer(me.swimmer);
       if (miniSwimmer.dataset.swimmer !== character) {
@@ -160,7 +170,7 @@ joinForm.addEventListener("submit", (event) => {
     joinError.textContent = "Enter a name first.";
     return;
   }
-  if (!send("join", { playerId, name: joinedName, swimmer: selectedSwimmer })) {
+  if (!send("join", { playerId, playerToken, name: joinedName, swimmer: selectedSwimmer })) {
     joinError.textContent = "Connecting… try again in a moment.";
   }
 });

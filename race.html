@@ -28,9 +28,15 @@
       </div>
     </aside>
     <div class="presenter-controls">
+      <form id="presenterLogin" class="presenter-login">
+        <label for="presenterKey">Presenter key</label>
+        <input id="presenterKey" type="password" autocomplete="current-password" minlength="32" maxlength="256" required>
+        <button type="submit">Unlock controls</button>
+        <p id="presenterAuthStatus" role="status"></p>
+      </form>
       <button id="startBtn" class="primary" type="button" disabled>Start race</button>
-      <button id="resetBtn" type="button">Reset</button>
-      <button id="clearBtn" type="button">Clear players</button>
+      <button id="resetBtn" type="button" disabled>Reset</button>
+      <button id="clearBtn" type="button" disabled>Clear players</button>
     </div>
   </header>
 

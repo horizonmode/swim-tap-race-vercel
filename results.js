@@ -1,6 +1,6 @@
 import { swimmerMarkup } from './swimmers.js';
 
-export function createResults(container) {
+export function createResults(container, { onDismiss } = {}) {
   const dialog = document.createElement('dialog');
   dialog.className = 'race-results';
   dialog.setAttribute('aria-labelledby', 'resultsTitle');
@@ -17,6 +17,10 @@ export function createResults(container) {
   reopen.addEventListener('click', () => dialog.showModal());
   dialog.querySelector('.results-close').addEventListener('click', () => dialog.close());
   let finished = false;
+  dialog.addEventListener('close', () => {
+    // State-driven closes must not trigger another reset on connected screens.
+    if (finished) onDismiss?.();
+  });
 
   return ({ race, players }, myId) => {
     if (race.state !== 'finished') {
