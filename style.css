@@ -704,13 +704,6 @@ input {
   text-overflow: ellipsis;
 }
 
-.lane-rank {
-  flex-shrink: 0;
-  border-radius: 0;
-  background: #153850;
-  color: white;
-}
-
 .lane-name-dot {
   flex-shrink: 0;
   border-radius: 0;
@@ -843,10 +836,6 @@ input {
     display: none;
   }
 
-  .lane-rank {
-    min-width: 20px;
-    margin-right: 5px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

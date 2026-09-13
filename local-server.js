@@ -13,7 +13,7 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL(".", import.meta.url));
 const PORT = Number(process.env.PORT || 3000);
-const mime = { ".html":"text/html", ".js":"text/javascript", ".css":"text/css" };
+const mime = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css" };
 const publicFiles = new Set([
   "/index.html", "/race.html", "/style.css", "/player.js", "/race.js",
   "/join.js", "/swimmers.js", "/results.js", "/vendor/qrcode.js"
