@@ -75,7 +75,7 @@ const choices = document.getElementById("swimmerChoices");
 for (const option of swimmerOptions) {
   const label = document.createElement("label");
   label.className = "swimmer-choice";
-  label.innerHTML = `<input type="radio" name="swimmer" value="${option.id}"><span class="swimmer-option"><span aria-hidden="true">${swimmerMarkup(option.id)}</span><span>${option.name}</span></span>`;
+  label.innerHTML = `<input type="radio" name="swimmer" value="${option.id}" aria-label="${option.name}"><span class="swimmer-option"><span aria-hidden="true">${swimmerMarkup(option.id)}</span></span>`;
   const radio = label.querySelector("input");
   radio.checked = option.id === selectedSwimmer;
   radio.addEventListener("change", () => {
