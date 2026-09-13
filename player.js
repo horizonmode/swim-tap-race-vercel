@@ -18,6 +18,16 @@ let joinedName = "";
 let selectedSwimmer = normalizeSwimmer(sessionStorage.getItem("swim-character"));
 let strokeTimer;
 let lastDistance = 0;
+function renderMySwimmer(character) {
+  miniSwimmer.innerHTML = `<span class="splash"></span>${swimmerMarkup(character)}`;
+  miniSwimmer.dataset.swimmer = normalizeSwimmer(character);
+}
+function animateStroke() {
+  miniSwimmer.classList.add("moving");
+  clearTimeout(strokeTimer);
+  strokeTimer = setTimeout(() => miniSwimmer.classList.remove("moving"), 420);
+}
+
 const choices = document.getElementById("swimmerChoices");
 for (const option of swimmerOptions) {
   const label = document.createElement("label");
@@ -28,11 +38,11 @@ for (const option of swimmerOptions) {
   radio.addEventListener("change", () => {
     selectedSwimmer = radio.value;
     sessionStorage.setItem("swim-character", selectedSwimmer);
-    miniSwimmer.innerHTML = swimmerMarkup(selectedSwimmer);
+    renderMySwimmer(selectedSwimmer);
   });
   choices.appendChild(label);
 }
-miniSwimmer.innerHTML = swimmerMarkup(selectedSwimmer);
+renderMySwimmer(selectedSwimmer);
 let ws;
 let reconnectTimer;
 
@@ -89,13 +99,10 @@ function connect() {
 
       const character = normalizeSwimmer(me.swimmer);
       if (miniSwimmer.dataset.swimmer !== character) {
-        miniSwimmer.innerHTML = swimmerMarkup(character);
-        miniSwimmer.dataset.swimmer = character;
+        renderMySwimmer(character);
       }
       if (race.state === "racing" && me.distance > lastDistance) {
-        miniSwimmer.classList.add("moving");
-        clearTimeout(strokeTimer);
-        strokeTimer = setTimeout(() => miniSwimmer.classList.remove("moving"), 420);
+        animateStroke();
       } else if (race.state !== "racing") {
         clearTimeout(strokeTimer);
         miniSwimmer.classList.remove("moving");
@@ -156,7 +163,7 @@ joinForm.addEventListener("submit", (event) => {
 
 tapButton.addEventListener("pointerdown", (event) => {
   event.preventDefault();
-  if (!tapButton.disabled) send("tap");
+  if (!tapButton.disabled && send("tap")) animateStroke();
 });
 
 connect();

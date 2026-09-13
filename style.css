@@ -121,36 +121,8 @@ input {
   font-size: 20px;
 }
 
-.mini-track {
-  height: 76px;
-  border-radius: 16px;
-  margin: 18px 0;
-  position: relative;
-  overflow: hidden;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(255,255,255,.03) 0 48px,
-      rgba(255,255,255,.09) 48px 50px
-    ),
-    #0a507b;
-}
-
-.mini-track::after {
-  content: "🏁";
-  position: absolute;
-  right: 6px;
-  top: 18px;
-  font-size: 34px;
-}
-
-.mini-swimmer {
-  position: absolute;
-  top: 15px;
-  left: 0;
-  font-size: 40px;
-  transition: left .08s linear;
-}
+/* The phone uses the same pool, lane ropes and finish as the presenter. */
+.player-pool { margin: 18px 0; }
 
 .tap-button {
   width: 100%;
@@ -622,7 +594,7 @@ input {
 .swimmer-option .pixel-swimmer { width: 64px; height: 48px; max-width: 100%; --cap-color: #5dd7ff; }
 .swimmer-choice input:checked + .swimmer-option { border-color: #9cecff; background: #145477; box-shadow: 0 3px 0 #5dd7ff; }
 .swimmer-choice input:focus-visible + .swimmer-option { outline: 3px solid white; outline-offset: 3px; }
-.mini-swimmer { width: 72px; height: 54px; top: 10px; --cap-color: #5dd7ff; }
+.mini-swimmer { width: 72px; height: 54px; top: 16px; --cap-color: #5dd7ff; }
 @media (max-width: 380px) { .swimmer-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 /* Cats paddle their paws while keeping their face and ears readable. */
