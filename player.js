@@ -35,7 +35,6 @@ function connect() {
   ws = new WebSocket(wsUrl());
 
   ws.addEventListener("open", () => {
-    joinError.textContent = "";
     if (joinedName) send("join", { playerId, name: joinedName });
   });
 
@@ -43,11 +42,19 @@ function connect() {
     let message;
     try { message = JSON.parse(event.data); } catch { return; }
 
+    if (message.type === "serverError") {
+      joinError.textContent = message.message;
+      hint.textContent = message.message;
+      tapButton.disabled = true;
+      return;
+    }
+
     if (message.type === "joinResult") {
       if (!message.ok) {
         joinError.textContent = message.message || "Could not join.";
         return;
       }
+      joinError.textContent = "";
       myId = message.id;
       playerName.textContent = joinedName;
       joinCard.classList.add("hidden");

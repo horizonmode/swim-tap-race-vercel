@@ -6,9 +6,11 @@
   "description": "Multiplayer tap-to-swim race for Vercel WebSockets",
   "scripts": {
     "dev": "node local-server.js",
-    "start": "node local-server.js"
+    "start": "node local-server.js",
+    "test": "node --test"
   },
   "dependencies": {
+    "ioredis": "^6.0.0",
     "qrcode-generator": "^2.0.4",
     "ws": "^8.18.3"
   },

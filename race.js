@@ -1,3 +1,4 @@
+const connectionStatus = document.getElementById("connectionStatus");
 const lanes = document.getElementById("lanes");
 const playerCount = document.getElementById("playerCount");
 const countdown = document.getElementById("countdown");
@@ -180,6 +181,7 @@ function send(type, data = {}) {
 }
 
 function handleGameState({ race, players }) {
+  connectionStatus.textContent = "Live · connected to race";
   latestRace = race;
   renderPlayers(players, race.state);
 
@@ -227,6 +229,10 @@ function connect() {
   ws.addEventListener("message", (event) => {
     let message;
     try { message = JSON.parse(event.data); } catch { return; }
+    if (message.type === "serverError") {
+      connectionStatus.textContent = message.message;
+      startBtn.disabled = true;
+    }
     if (message.type === "gameState") handleGameState(message);
     if (message.type === "winner") handleWinner(message);
   });
@@ -234,6 +240,7 @@ function connect() {
   ws.addEventListener("close", () => {
     startBtn.disabled = true;
     startBtn.title = "Reconnecting to the race server";
+    if (!connectionStatus.textContent.includes("setup")) connectionStatus.textContent = "Reconnecting to race…";
     reconnectTimer = setTimeout(connect, 900);
   });
 }
