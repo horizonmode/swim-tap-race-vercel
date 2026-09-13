@@ -1,0 +1,17 @@
+{
+  "name": "swim-tap-race-vercel",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Multiplayer tap-to-swim race for Vercel WebSockets",
+  "scripts": {
+    "dev": "node local-server.js",
+    "start": "node local-server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

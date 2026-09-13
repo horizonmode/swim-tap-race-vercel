@@ -1,0 +1,41 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Swim Tap Race</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="player-page">
+  <main class="player-shell">
+    <section id="joinCard" class="card">
+      <div class="big-emoji">🏊</div>
+      <h1>Swim Tap Race</h1>
+      <p>Enter your name, then tap as fast as you can when the race starts.</p>
+      <form id="joinForm">
+        <label for="name">Your name</label>
+        <input id="name" maxlength="18" autocomplete="nickname" placeholder="e.g. Seb">
+        <button class="primary" type="submit">Join race</button>
+        <p id="joinError" class="error" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section id="gameCard" class="card hidden">
+      <div class="status-row">
+        <span id="playerName"></span>
+        <strong id="raceStatus">Waiting…</strong>
+      </div>
+      <div class="mini-track">
+        <div class="mini-swimmer" id="miniSwimmer">🏊</div>
+      </div>
+      <button id="tapButton" class="tap-button" type="button" disabled>
+        TAP TO SWIM
+      </button>
+      <p id="hint">Wait for the presenter to start the race.</p>
+    </section>
+  </main>
+
+  <script src="/player.js"></script>
+</body>
+</html>

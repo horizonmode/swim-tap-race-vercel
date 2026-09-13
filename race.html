@@ -1,0 +1,42 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Swim Tap Race — Presenter</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="race-page">
+  <header class="race-header">
+    <div>
+      <div class="eyebrow">WELLBEING MOMENT</div>
+      <h1>Swim Tap Race 🏊</h1>
+      <p id="joinText">Players: open this site on your phone and join the race.</p>
+    </div>
+    <div class="presenter-controls">
+      <button id="startBtn" class="primary" type="button">Start race</button>
+      <button id="resetBtn" type="button">Reset</button>
+      <button id="clearBtn" type="button">Clear players</button>
+    </div>
+  </header>
+
+  <main class="race-main">
+    <section class="scoreboard">
+      <div id="countdown" class="countdown hidden"></div>
+      <div id="goBurst" class="go-burst hidden">GO!</div>
+      <div id="winnerBanner" class="winner hidden"></div>
+      <div id="lanes" class="lanes">
+        <div class="empty-state">Waiting for swimmers to join…</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="race-footer">
+    <span id="playerCount">0 swimmers</span>
+    <span>Fastest fingers win.</span>
+  </footer>
+
+  <script src="/race.js"></script>
+</body>
+</html>
