@@ -77,7 +77,7 @@ export function swimmerMarkup(value) {
   const head = {
     dog: '<path fill="#bc8154" d="M42 15h15v6h6v11H42z"/><path fill="#684737" d="M41 14h7v17h-7z"/><path fill="#efd3a3" d="M53 23h10v9H53z"/><path fill="#263954" d="M53 18h3v3h-3zM60 23h4v4h-4z"/><path fill="#ff8e98" d="M58 32h4v5h-4z"/>',
     frog: '<path fill="#82d96b" d="M42 14h16v6h5v13H42zM46 9h9v9h-9z"/><path fill="#fffbe2" d="M48 10h6v6h-6z"/><path fill="#263954" d="M51 11h3v4h-3zM52 28h11v3H52z"/>',
-    duck: '<path fill="#f4c542" d="M42 14h16v7h6v10H42z"/><path fill="#fff1a8" d="M45 20h12v11H45z"/><path fill="#263954" d="M53 17h4v4h-4z"/><path fill="#f28c28" d="M57 24h7v6h-7z"/>'
+    duck: '<path fill="#f4c542" d="M40 15h4V9h5V5h12v4h3v5h-3v5h3v4h-4v9H43v-4h-5v-8h2z"/><path fill="#fff1a8" d="M45 20h13v9H45z"/><path fill="#263954" d="M53 13h4v4h-4z"/><path fill="#fff" d="M54 13h2v2h-2z"/><path fill="#f28c28" d="M57 20h7v4h-4v5h-7v-5h4z"/><path fill="#d98a20" d="M57 24h7v3h-7z"/><path fill="#e7ad2f" d="M28 22h10v9H28z"/>'
   }[kind];
   return `<svg class="pixel-swimmer animal-swimmer" viewBox="0 0 64 48" shape-rendering="crispEdges" aria-hidden="true">
     <path fill="${color}" d="M19 21H9v-9H5v14h14z"/>
