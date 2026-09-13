@@ -12,7 +12,7 @@ const clearBtn = document.getElementById("clearBtn");
 const scoreboard = document.querySelector(".scoreboard");
 
 const updateResults = createResults(document.querySelector(".race-main"), {
-  onDismiss: () => send("presenter:reset")
+  onDismiss: () => { if (presenterAuthorized) send("presenter:reset"); }
 });
 
 const presenterLogin = document.getElementById("presenterLogin");

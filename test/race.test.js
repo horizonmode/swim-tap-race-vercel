@@ -252,3 +252,30 @@ test('missing presenter key fails closed and five wrong keys disconnect the clie
   assert.ok(client.messages.every(m => m.type !== 'presenterAuth' || !m.ok));
   await settle();
 });
+
+test('an old connection token cannot tap for a player ID reused after clearing', async () => {
+  const store = createMemoryStore().store;
+  await store.update({ type: 'join', playerId: 'same', playerToken: TOKEN, name: 'Old' });
+  await store.update({ type: 'presenter:clear' });
+  const newToken = 'new-player-private-token-at-least-32-characters';
+  await store.update({ type: 'join', playerId: 'same', playerToken: newToken, name: 'New' });
+  await store.update({ type: 'presenter:start' }, null, 1000);
+  await store.update({ type: 'tap', playerToken: TOKEN }, 'same', 4000);
+  assert.equal((await store.read()).players[0].distance, 0);
+  await store.update({ type: 'tap', playerToken: newToken }, 'same', 4000);
+  assert.equal((await store.read()).players[0].distance, 1.45);
+});
+
+test('presenter keys accept a single character, words and phrases while rejecting incorrect values', async t => {
+  for (const key of ['a', 'swim', 'pool party', '泳ぐ']) {
+    const server = createRaceServer(createMemoryStore, undefined, { presenterKey: key });
+    t.after(() => server.close());
+    const client = socket(server);
+    client.command({ type: 'presenter:auth', key: key + 'wrong' });
+    assert.equal(client.messages.at(-1).ok, false);
+    client.command({ type: 'presenter:auth', key });
+    assert.equal(client.messages.at(-1).ok, true);
+    client.close();
+  }
+  await settle();
+});

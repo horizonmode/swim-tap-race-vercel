@@ -10,8 +10,9 @@ A tiny real-time multiplayer race for a wellbeing presentation.
 4. Do not set a build command.
 5. In the project's **Storage** tab, connect an **Upstash Redis** database through the Vercel Marketplace. Choose a region near London where available.
 6. Under **Settings → Environment Variables**, ensure `REDIS_URL` is set for **Production** to the database's Redis connection URL (`rediss://…`). The integration may add this automatically. Use the Redis URL, not the REST API URL/token, and keep it server-side.
-7. Make sure **Fluid Compute** is enabled, then deploy (or redeploy after adding the environment variable).
-8. Open the production `/race` page, scan its QR code on a phone, and join. The presenter should list the swimmer immediately. Check Start, tapping, Reset, and Clear players from a second device.
+7. Add a private `PRESENTER_KEY` (any non-empty word or phrase, up to 256 characters) to Production. You can use the generated key in your local `.env`; never put it in the QR URL or client code. Set `ALLOWED_ORIGINS=https://swim-tap-race-vercel.vercel.app` for this site (change it if you use another domain). Multiple exact origins can be comma-separated, without trailing slashes. Vercel's generated deployment/branch domains are also allowed automatically when its system variables are available.
+8. Make sure **Fluid Compute** is enabled, then deploy (or redeploy after adding environment variables).
+9. Open the production `/race` page and enter the presenter key to unlock the controls. Scan its QR code on a phone and join. The presenter should list the swimmer immediately. Check Start, tapping, Reset, and Clear players from a second device.
 
 Do not paste Redis credentials into source files or commit them. Preview deployments need their own `REDIS_URL` environment setting if you want to test them. Production and preview use separate room keys by default.
 
@@ -32,7 +33,7 @@ cp .env.example .env # first checkout only; keep your existing .env
 npm run dev
 ```
 
-The server automatically loads `.env`. Set `REDIS_URL` to test the shared Redis backend locally, or leave it blank for in-memory play. `PORT` defaults to 3000 and `RACE_ROOM=local` keeps local testing separate from production. Restart the server after changing variables. `.env` is ignored by Git and cannot be downloaded from the local server.
+The server automatically loads `.env`. Set `PRESENTER_KEY` to any non-empty word or phrase (up to 256 characters) and enter it on the presenter screen to unlock controls. Set `REDIS_URL` to test the shared Redis backend locally, or leave it blank for in-memory play. `PORT` defaults to 3000 and `RACE_ROOM=local` keeps local testing separate from production. Restart the server after changing variables. `.env` is ignored by Git and cannot be downloaded from the local server.
 
 Then open:
 
@@ -70,3 +71,14 @@ In `lib/race-state.js` for deployment (and `local-server.js` for local play):
 - **Start race** — 3, 2, 1, GO
 - **Reset** — keeps players but returns everyone to the start
 - **Clear players** — empties the lobby
+
+## Security controls
+
+- Presenter commands require the private `PRESENTER_KEY`. The browser retains it only in page memory for reconnects; refreshing requires entering it again. Missing or empty keys leave controls locked. Keys are case-sensitive.
+- Each player has a private, randomly generated reconnect token stored in their tab's session storage. Only its hash is stored with race state. Public snapshots include neither the token nor its hash.
+- Both local and Redis play use the same message validation and authorization. Malformed messages close that connection rather than crashing the server.
+- WebSocket upgrades require `/api/ws` and an exact allowed Origin. Local play automatically allows localhost and the computer's LAN addresses; production origins come from `ALLOWED_ORIGINS` and Vercel system variables. Origin checking supplements authentication; it does not authenticate non-browser clients.
+- Each instance caps connections at 100, connection attempts at a burst of 60 then 2/second, messages per connection at a burst of 60 then 30/second, and queued commands at 16 per connection. A shared instance work budget limits storage submissions, and tap cooldowns are checked before Redis access. Five failed presenter-key attempts close a connection. These limits mitigate abuse but do not provide global distributed DDoS protection; configure Vercel Firewall/spend controls for public events as needed.
+- Existing players created before token authentication cannot be claimed with their public IDs. After this upgrade, unlock the presenter, **Clear players**, then reload both pages and rejoin.
+
+Use HTTPS/WSS for the deployed event. Local HTTP is intended for a trusted development Wi-Fi network; it does not encrypt the presenter key or player tokens in transit. Redis configuration and credentials remain server-side.
