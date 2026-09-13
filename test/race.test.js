@@ -65,9 +65,7 @@ test('player join on one instance updates a presenter on another, including imme
   const reconnected = socket(b);
   reconnected.command({ type: 'join', playerToken: TOKEN, playerId: 'one', playerToken: 'test-player-token-0000000000000000', name: 'Swimmer' });
   await settle();
-  assert.equal(reconnected.messages.find(m => m.type === 'joinResult').ok, false);
-  presenter.command({ type: 'presenter:reset' });
-  await settle();
+  assert.equal(reconnected.messages.find(m => m.type === 'joinResult').ok, true);
   reconnected.command({ type: 'join', playerToken: TOKEN, playerId: 'one', playerToken: 'test-player-token-0000000000000000', name: 'Swimmer', swimmer: 'cat' });
   await settle();
   assert.equal(reconnected.messages.filter(m => m.type === 'joinResult').at(-1).ok, true);
@@ -137,6 +135,17 @@ test('simultaneous taps for the same player cannot bypass the cooldown', async (
   await a.update({ type: 'tick' }, null, 4000);
   await Promise.all([a.update({ type: 'tap', playerToken: 'test-player-token-0000000000000000' }, 'a', 4000), b.update({ type: 'tap', playerToken: 'test-player-token-0000000000000000' }, 'a', 4000)]);
   assert.equal((await a.read()).players[0].distance, 1.2);
+});
+
+test('last player leaving a race returns the room to the lobby', async () => {
+  const store = createMemoryStore().store;
+  await store.update({ type: 'join', playerToken: TOKEN, playerId: 'last', name: 'Last' });
+  await store.update({ type: 'presenter:start' }, null, 1000);
+  await store.update({ type: 'tick' }, null, 4000);
+  const result = await store.update({ type: 'leave', playerToken: TOKEN }, 'last');
+  assert.equal(result.state.players.length, 0);
+  assert.equal(result.state.race.state, 'lobby');
+  assert.equal(result.state.race.winnerId, null);
 });
 
 test('supports 50 players but rejects the 51st', async () => {

@@ -596,11 +596,25 @@ input {
   flex: 0 0 240px;
 }
 
+.join-qr {
+  flex: 0 0 240px;
+  width: 240px;
+  height: 240px;
+}
+
 #joinQr:empty {
   display: none;
 }
 
 #joinQr svg {
+  display: block;
+  width: 240px;
+  height: 240px;
+  background: white;
+  border-radius: 8px;
+}
+
+.join-qr svg {
   display: block;
   width: 240px;
   height: 240px;
