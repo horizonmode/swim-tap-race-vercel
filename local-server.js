@@ -24,7 +24,7 @@ let race = { state: "lobby", startedAt: null, winnerId: null, countdownEndsAt: n
 const mime = { ".html":"text/html", ".js":"text/javascript", ".css":"text/css" };
 const publicFiles = new Set([
   "/index.html", "/race.html", "/style.css", "/player.js", "/race.js",
-  "/join.js", "/swimmers.js", "/vendor/qrcode.js"
+  "/join.js", "/swimmers.js", "/results.js", "/vendor/qrcode.js"
 ]);
 const handleRequest = async (req, res) => {
   if (req.url === "/api/join-info") {

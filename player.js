@@ -1,3 +1,4 @@
+import { createResults } from "./results.js";
 import { swimmerOptions, normalizeSwimmer, swimmerMarkup } from "./swimmers.js";
 const joinCard = document.getElementById("joinCard");
 const gameCard = document.getElementById("gameCard");
@@ -9,6 +10,8 @@ const raceStatus = document.getElementById("raceStatus");
 const tapButton = document.getElementById("tapButton");
 const hint = document.getElementById("hint");
 const miniSwimmer = document.getElementById("miniSwimmer");
+
+const updateResults = createResults(gameCard);
 
 const playerId = sessionStorage.getItem("swim-player-id") || crypto.randomUUID();
 sessionStorage.setItem("swim-player-id", playerId);
@@ -94,6 +97,7 @@ function connect() {
     if (message.type === "gameState") {
       const { race, players } = message;
       if (!myId) return;
+      updateResults({ race, players }, myId);
       const me = players.find((p) => p.id === myId);
       if (!me) return;
 

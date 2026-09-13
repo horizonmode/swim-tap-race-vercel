@@ -1,3 +1,4 @@
+import { createResults } from "./results.js";
 import { normalizeSwimmer, swimmerMarkup } from "./swimmers.js";
 const connectionStatus = document.getElementById("connectionStatus");
 const lanes = document.getElementById("lanes");
@@ -9,6 +10,8 @@ const startBtn = document.getElementById("startBtn");
 const resetBtn = document.getElementById("resetBtn");
 const clearBtn = document.getElementById("clearBtn");
 const scoreboard = document.querySelector(".scoreboard");
+
+const updateResults = createResults(document.querySelector(".race-main"));
 
 let latestRace = null;
 let previousRaceState = null;
@@ -176,6 +179,7 @@ function send(type, data = {}) {
 }
 
 function handleGameState({ race, players }) {
+  updateResults({ race, players });
   connectionStatus.textContent = "Live · connected to race";
   latestRace = race;
   renderPlayers(players, race.state);
