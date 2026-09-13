@@ -1,4 +1,5 @@
 <script>
+  import { motionDuration } from "./swimmer-motion.js";
   import { onMount } from "svelte";
   import { createResults } from "../results.js";
   import { swimmerOptions, normalizeSwimmer, swimmerMarkup } from "../swimmers.js";
@@ -26,6 +27,7 @@
   let myPlayer = null;
   let countdownValue = null;
   let lastDistance = 0;
+  let motionMs = 0;
   let moving = false;
   let strokeTimer;
 
@@ -86,6 +88,7 @@
       clearTimeout(strokeTimer);
       moving = false;
     }
+    if (lastDistance !== myPlayer.distance || race.state !== "racing") motionMs = motionDuration(lastDistance, myPlayer.distance, race.state === "racing");
     lastDistance = myPlayer.distance;
 
     if (race.state === "lobby") {
@@ -214,7 +217,7 @@
     {/if}
     <div class="scoreboard player-pool" aria-label="Your swimming lane">
       <div class="track mini-track">
-        <div class:moving class="swimmer-wrap mini-swimmer" aria-hidden="true" style={`left:calc(${progress}% - ${progress * 0.72}px)`}>
+        <div class:moving class="swimmer-wrap mini-swimmer" aria-hidden="true" style={`transition-duration:${motionMs}ms;left:calc(${progress}% - ${progress * 0.72}px)`}>
           <span class="splash"></span>{@html swimmerMarkup(currentSwimmer)}
         </div>
       </div>

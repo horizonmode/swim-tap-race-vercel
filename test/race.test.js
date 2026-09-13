@@ -50,7 +50,7 @@ test('player join on one instance updates a presenter on another, including imme
   const presenter = socket(a);
   presenter.command({ type: 'presenter:auth', key: KEY });
   const player = socket(b);
-  player.command({ type: 'join', playerToken: TOKEN, playerId: 'one', playerToken: 'test-player-token-0000000000000000', name: 'Swimmer', swimmer: 'cat' });
+  player.command({ type: 'join', playerId: 'one', playerToken: 'test-player-token-0000000000000000', name: 'Swimmer', swimmer: 'cat' });
   await settle();
   assert.equal(player.messages.find(m => m.type === 'joinResult').ok, true);
   assert.equal(presenter.messages.filter(m => m.type === 'gameState').at(-1).players[0].name, 'Swimmer');
@@ -61,12 +61,12 @@ test('player join on one instance updates a presenter on another, including imme
   assert.equal(player.messages.filter(m => m.type === 'gameState').at(-1).race.state, 'countdown');
   player.close();
   await settle();
-  assert.equal(presenter.messages.filter(m => m.type === 'gameState').at(-1).players.length, 0);
+  assert.equal(presenter.messages.filter(m => m.type === 'gameState').at(-1).players.length, 1);
   const reconnected = socket(b);
-  reconnected.command({ type: 'join', playerToken: TOKEN, playerId: 'one', playerToken: 'test-player-token-0000000000000000', name: 'Swimmer' });
+  reconnected.command({ type: 'join', playerId: 'one', playerToken: 'test-player-token-0000000000000000', name: 'Swimmer' });
   await settle();
   assert.equal(reconnected.messages.find(m => m.type === 'joinResult').ok, true);
-  reconnected.command({ type: 'join', playerToken: TOKEN, playerId: 'one', playerToken: 'test-player-token-0000000000000000', name: 'Swimmer', swimmer: 'cat' });
+  reconnected.command({ type: 'join', playerId: 'one', playerToken: 'test-player-token-0000000000000000', name: 'Swimmer', swimmer: 'cat' });
   await settle();
   assert.equal(reconnected.messages.filter(m => m.type === 'joinResult').at(-1).ok, true);
   assert.equal(reconnected.messages.filter(m => m.type === 'gameState').at(-1).players[0].swimmer, 'cat');
@@ -101,13 +101,13 @@ test('concurrent instances preserve joins, enforce unique names and keep a singl
   const a = storage().store;
   const b = storage().store;
   await Promise.all([
-    a.update({ type: 'join', playerToken: TOKEN, playerId: 'a', playerToken: 'test-player-token-0000000000000000', name: 'A' }, null, 1000),
-    b.update({ type: 'join', playerToken: TOKEN, playerId: 'b', playerToken: 'test-player-token-0000000000000000', name: 'B' }, null, 1000)
+    a.update({ type: 'join', playerId: 'a', playerToken: 'test-player-token-0000000000000000', name: 'A' }, null, 1000),
+    b.update({ type: 'join', playerId: 'b', playerToken: 'test-player-token-0000000000000000', name: 'B' }, null, 1000)
   ]);
   assert.equal((await a.read()).players.length, 2);
   const duplicates = await Promise.all([
-    a.update({ type: 'join', playerToken: TOKEN, playerId: 'c', playerToken: 'test-player-token-0000000000000000', name: 'Same' }),
-    b.update({ type: 'join', playerToken: TOKEN, playerId: 'd', playerToken: 'test-player-token-0000000000000000', name: 'Same' })
+    a.update({ type: 'join', playerId: 'c', playerToken: 'test-player-token-0000000000000000', name: 'Same' }),
+    b.update({ type: 'join', playerId: 'd', playerToken: 'test-player-token-0000000000000000', name: 'Same' })
   ]);
   assert.equal(duplicates.filter(result => result.reply.ok).length, 1);
   await a.update({ type: 'presenter:start' }, null, 1000);
@@ -130,22 +130,27 @@ test('simultaneous taps for the same player cannot bypass the cooldown', async (
   const storage = database();
   const a = storage().store;
   const b = storage().store;
-  await a.update({ type: 'join', playerToken: TOKEN, playerId: 'a', playerToken: 'test-player-token-0000000000000000', name: 'A' }, null, 1000);
+  await a.update({ type: 'join', playerId: 'a', playerToken: 'test-player-token-0000000000000000', name: 'A' }, null, 1000);
   await a.update({ type: 'presenter:start' }, null, 1000);
   await a.update({ type: 'tick' }, null, 4000);
   await Promise.all([a.update({ type: 'tap', playerToken: 'test-player-token-0000000000000000' }, 'a', 4000), b.update({ type: 'tap', playerToken: 'test-player-token-0000000000000000' }, 'a', 4000)]);
   assert.equal((await a.read()).players[0].distance, 1.2);
 });
 
-test('last player leaving a race returns the room to the lobby', async () => {
+test('explicit leave removes a lobby player but preserves race participants and final results', async () => {
   const store = createMemoryStore().store;
+  await store.update({ type: 'join', playerToken: TOKEN, playerId: 'last', name: 'Last' });
+  await store.update({ type: 'leave', playerToken: TOKEN }, 'last');
+  assert.equal((await store.read()).players.length, 0);
   await store.update({ type: 'join', playerToken: TOKEN, playerId: 'last', name: 'Last' });
   await store.update({ type: 'presenter:start' }, null, 1000);
   await store.update({ type: 'tick' }, null, 4000);
-  const result = await store.update({ type: 'leave', playerToken: TOKEN }, 'last');
-  assert.equal(result.state.players.length, 0);
-  assert.equal(result.state.race.state, 'lobby');
-  assert.equal(result.state.race.winnerId, null);
+  await store.update({ type: 'leave', playerToken: TOKEN }, 'last');
+  assert.equal((await store.read()).players.length, 1);
+  for (let i = 0; i < 84; i++) await store.update({ type: 'tap', playerToken: TOKEN }, 'last', 4000 + i * 60);
+  await store.update({ type: 'leave', playerToken: TOKEN }, 'last');
+  assert.equal((await store.read()).race.state, 'finished');
+  assert.equal((await store.read()).players[0].distance, 100);
 });
 
 test('supports 50 players but rejects the 51st', async () => {
@@ -170,7 +175,7 @@ test('missing storage reports an error instead of accepting a disconnected local
   const server = createRaceServer(() => { throw new Error('Missing Redis'); });
   t.after(() => server.close());
   const player = socket(server);
-  player.command({ type: 'join', playerToken: TOKEN, playerId: 'a', playerToken: 'test-player-token-0000000000000000', name: 'A' });
+  player.command({ type: 'join', playerId: 'a', playerToken: 'test-player-token-0000000000000000', name: 'A' });
   await settle();
   assert.equal(player.messages[0].type, 'serverError');
   assert.equal(player.readyState, 3);
@@ -179,9 +184,9 @@ test('missing storage reports an error instead of accepting a disconnected local
 
 test('character choices persist through reset and invalid choices fall back safely', async () => {
   const store = database()().store;
-  await store.update({ type: 'join', playerToken: TOKEN, playerId: 'dog', playerToken: 'test-player-token-0000000000000000', name: 'Dog', swimmer: 'dog' });
-  await store.update({ type: 'join', playerToken: TOKEN, playerId: 'frog', playerToken: 'test-player-token-0000000000000000', name: 'Frog', swimmer: 'frog' });
-  await store.update({ type: 'join', playerToken: TOKEN, playerId: 'bad', playerToken: 'test-player-token-0000000000000000', name: 'Fallback', swimmer: '<script>' });
+  await store.update({ type: 'join', playerId: 'dog', playerToken: 'test-player-token-0000000000000000', name: 'Dog', swimmer: 'dog' });
+  await store.update({ type: 'join', playerId: 'frog', playerToken: 'test-player-token-0000000000000000', name: 'Frog', swimmer: 'frog' });
+  await store.update({ type: 'join', playerId: 'bad', playerToken: 'test-player-token-0000000000000000', name: 'Fallback', swimmer: '<script>' });
   await store.update({ type: 'presenter:reset' });
   assert.deepEqual((await store.read()).players.map(p => p.swimmer), ['dog', 'frog', 'human']);
 });

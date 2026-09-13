@@ -1,4 +1,6 @@
 <script>
+  import { createPresenterSession } from "./presenter-session.js";
+  import { motionDuration } from "./swimmer-motion.js";
   import { onMount } from "svelte";
   import qrcode from "qrcode-generator";
   import { createResults } from "../results.js";
@@ -12,6 +14,7 @@
   let networkChoice;
   let joinNetwork;
   let presenterKey = "";
+  const authSession = createPresenterSession(send);
   let authStatus = "";
   let authorized = false;
   let ws;
@@ -70,7 +73,12 @@
   function handleGameState(message) {
     const previousState = race?.state;
     race = message.race;
-    players = message.players;
+    const previousPlayers = new Map(players.map(player => [player.id, player]));
+    players = message.players.map(player => {
+      const previous = previousPlayers.get(player.id);
+      return { ...player, motionMs: previous?.distance === player.distance && race.state === "racing"
+        ? previous.motionMs : motionDuration(previous?.distance, player.distance, race.state === "racing") };
+    });
     results?.({ race, players });
 
     if (race.state === "countdown") startCountdown(race.countdownEndsAt);
@@ -133,7 +141,7 @@
 
   function authenticate(event) {
     event.preventDefault();
-    if (!send("presenter:auth", { key: presenterKey })) authStatus = "Connecting… try again shortly.";
+    if (!authSession.authenticate(presenterKey)) authStatus = "Connecting… try again shortly.";
     presenterKey = "";
   }
 
@@ -141,7 +149,7 @@
     clearTimeout(reconnectTimer);
     ws = new WebSocket(wsUrl());
     ws.addEventListener("open", () => {
-      if (presenterKey) send("presenter:auth", { key: presenterKey });
+      authSession.reconnect();
     });
     ws.addEventListener("message", event => {
       let message;
@@ -149,7 +157,7 @@
       if (message.type === "presenterAuth") {
         authorized = message.ok;
         authStatus = message.message;
-        if (!message.ok) presenterKey = "";
+        if (!message.ok) authSession.clear();
       } else if (message.type === "gameState") {
         handleGameState(message);
       } else if (message.type === "winner") {
@@ -233,7 +241,7 @@
             <div class="lane-name"><span class="lane-name-dot" style={`background:${capColor(player)}`}></span><span class="swimmer-name">{player.name}</span></div>
             <div class="track" style={`--cap-color:${capColor(player)}`}>
               <span class="track-player-name">{player.name}</span>
-              <div class="swimmer-wrap" class:moving={race?.state === "racing" && player.distance > 0} aria-hidden="true" style={`left:calc(${Math.max(0, Math.min(100, player.distance))}% - ${Math.max(0, Math.min(100, player.distance)) * 0.72}px)`}>
+              <div class="swimmer-wrap" class:moving={race?.state === "racing" && player.distance > 0} aria-hidden="true" style={`transition-duration:${player.motionMs || 0}ms;left:calc(${Math.max(0, Math.min(100, player.distance))}% - ${Math.max(0, Math.min(100, player.distance)) * 0.72}px)`}>
                 <span class="splash"></span>{@html swimmerMarkup(normalizeSwimmer(player.swimmer))}
               </div>
             </div>
