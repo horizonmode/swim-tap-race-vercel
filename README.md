@@ -64,7 +64,7 @@ In `lib/race-state.js` for deployment (and `local-server.js` for local play):
 
 - Maximum players: 20
 - Tap cooldown: 55 ms
-- Distance per accepted tap: 1.45
+- Distance per accepted tap: 1.0
 
 ## Presenter controls
 

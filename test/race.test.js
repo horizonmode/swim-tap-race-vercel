@@ -78,7 +78,7 @@ test('player join on one instance updates a presenter on another, including imme
   const store = storage().store;
   const started = await store.read();
   const startAt = started.race.countdownEndsAt;
-  for (let tap = 0; tap < 69; tap++) {
+  for (let tap = 0; tap < 100; tap++) {
     await store.update({ type: 'tap', playerToken: 'test-player-token-0000000000000000' }, 'one', startAt + tap * 60);
   }
   await settle();
@@ -136,7 +136,7 @@ test('simultaneous taps for the same player cannot bypass the cooldown', async (
   await a.update({ type: 'presenter:start' }, null, 1000);
   await a.update({ type: 'tick' }, null, 4000);
   await Promise.all([a.update({ type: 'tap', playerToken: 'test-player-token-0000000000000000' }, 'a', 4000), b.update({ type: 'tap', playerToken: 'test-player-token-0000000000000000' }, 'a', 4000)]);
-  assert.equal((await a.read()).players[0].distance, 1.45);
+  assert.equal((await a.read()).players[0].distance, 1);
 });
 
 test('supports 50 players but rejects the 51st', async () => {
@@ -290,7 +290,7 @@ test('an old connection token cannot tap for a player ID reused after clearing',
   await store.update({ type: 'tap', playerToken: TOKEN }, 'same', 4000);
   assert.equal((await store.read()).players[0].distance, 0);
   await store.update({ type: 'tap', playerToken: newToken }, 'same', 4000);
-  assert.equal((await store.read()).players[0].distance, 1.45);
+  assert.equal((await store.read()).players[0].distance, 1);
 });
 
 test('presenter keys accept a single character, words and phrases while rejecting incorrect values', async t => {
