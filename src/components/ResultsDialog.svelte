@@ -30,3 +30,21 @@
   </div>
 </dialog>
 {#if race?.state === 'finished'}<button class="results-open" type="button" on:click={() => lifecycle?.reopen()}>View scoreboard</button>{/if}
+
+<style>
+
+  dialog { position: fixed; width: min(640px, calc(100% - 28px)); max-height: calc(100dvh - 40px); padding: 30px 24px; border: 4px solid var(--accent-2); background: var(--panel); color: var(--text); box-shadow: 8px 8px 0 #031522; }
+  dialog::backdrop { background: #021422cc; }
+  h2 { margin: 10px 44px 12px 0; font-size: clamp(24px, 5vw, 36px); }
+  .results-close { position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; padding: 0; border-radius: 0; background: #1b5271; color: white; font-size: 30px; }
+  .results-summary { color: var(--muted); line-height: 1.5; }
+  .results-table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; text-align: left; }
+  th { color: var(--accent-2); font-size: 13px; }
+  td, th { padding: 10px 6px; border-bottom: 2px solid #28536b; }
+  td:last-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .results-identity { display: flex; align-items: center; gap: 8px; overflow-wrap: anywhere; --sprite-width: 48px; --sprite-height: 36px; --cap-color: var(--accent); }
+  .results-you { background: #16496a; }
+  .results-open { margin-top: 18px; background: var(--accent); color: #032033; }
+  @media (max-width: 400px) { dialog { padding: 24px 12px; } .results-identity { flex-wrap: wrap; gap: 4px; } }
+</style>

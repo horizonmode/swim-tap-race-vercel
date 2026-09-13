@@ -192,3 +192,7 @@
       onTap={() => send('tap')} onBoost={claimBoost} onLeave={resetPlayer} />
   {/if}
 </main>
+
+<style>
+  .player-shell { width: min(100%, 460px); }
+</style>

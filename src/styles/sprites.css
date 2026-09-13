@@ -1,0 +1,14 @@
+/* SVG markup is shared across scoped components, so sprite internals are global. */
+.pixel-swimmer { display: block; width: var(--sprite-width); height: var(--sprite-height); max-width: 100%; overflow: visible; }
+.swim-arm { transform-origin: 39px 25px; animation: arm-stroke .56s steps(4, end) infinite paused; }
+.arm-bottom { animation-delay: -.28s; }
+.swim-leg { transform-origin: 25px 25px; animation: leg-kick .28s steps(2, end) infinite alternate paused; }
+.leg-bottom { animation-delay: -.28s; }
+.moving :is(.swim-arm, .swim-leg, .duck-wing) { animation-play-state: running; }
+.cat-swimmer .swim-arm { animation-name: cat-paddle; animation-direction: alternate; }
+.duck-wing { transform-origin: 32px 27px; animation: duck-paddle .4s steps(2, end) infinite alternate paused; }
+@keyframes arm-stroke { 0% { transform: rotate(0); } 50% { transform: rotate(165deg); } 100% { transform: rotate(360deg); } }
+@keyframes leg-kick { from { transform: rotate(-10deg); } to { transform: rotate(10deg); } }
+@keyframes cat-paddle { from { transform: translate(-3px, 0); } to { transform: translate(4px, 2px); } }
+@keyframes duck-paddle { from { transform: translateY(0); } to { transform: translateY(-2px); } }
+@media (prefers-reduced-motion: reduce) { .swim-arm, .swim-leg, .duck-wing { animation: none; } }

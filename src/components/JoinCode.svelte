@@ -45,3 +45,19 @@
     {/if}
   </div>
 </aside>
+
+<style>
+
+  .join-panel { grid-column: 2; grid-row: 1 / span 2; justify-self: end; display: flex; flex-direction: row-reverse; align-items: center; gap: var(--space-4); max-width: 540px; }
+  .join-panel > div:last-child { min-width: 0; }
+  .join-qr { flex: 0 0 240px; width: 240px; height: 240px; }
+  .join-qr:empty { display: none; }
+  .join-qr :global(svg) { display: block; width: 100%; height: 100%; background: white; border-radius: 8px; }
+  strong { font-size: 22px; }
+  p { color: var(--muted); margin: 0; }
+  a { display: block; overflow-wrap: anywhere; margin-top: 6px; }
+  label { display: block; margin-top: 8px; font-size: 12px; }
+  select { margin-top: 4px; font-size: 14px; padding: 8px; }
+  @media (max-width: 760px) { .join-panel { grid-column: 1; grid-row: auto; } .join-qr { flex-basis: 200px; width: 200px; height: 200px; } }
+  @media (max-width: 400px) { .join-panel { flex-direction: column; align-items: flex-end; } .join-qr { flex-basis: auto; } }
+</style>

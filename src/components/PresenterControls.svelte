@@ -26,3 +26,12 @@
     </div>
   {/if}
 </div>
+
+<style>
+
+  .presenter-controls { grid-column: 1; display: flex; flex-wrap: wrap; gap: 10px; min-width: 0; }
+  .presenter-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  button:not(.primary) { background: #ffffff14; color: var(--text); }
+  form { display: grid; gap: var(--space-3); flex-basis: 100%; max-width: 420px; margin: 0 0 12px; }
+  p { margin: 0; color: var(--muted); font-size: 14px; }
+</style>

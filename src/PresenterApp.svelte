@@ -142,3 +142,12 @@
   <span>{players.length} swimmer{players.length === 1 ? "" : "s"}</span>
   <span>Tap to Swim.</span>
 </footer>
+
+<style>
+  .race-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--space-6); padding: 28px 36px 18px; }
+  h1 { margin: 4px 0; font-size: clamp(36px, 5vw, 68px); }
+  .race-header p { color: var(--muted); margin: 0; }
+  .race-main { padding: 12px 36px 24px; }
+  .race-footer { display: flex; justify-content: space-between; gap: var(--space-4); padding: 14px 36px 22px; color: var(--muted); font-weight: 700; }
+  @media (max-width: 760px) { .race-header { grid-template-columns: minmax(0, 1fr); padding: 20px; } .race-main { padding: 8px 20px 20px; } .race-footer { padding: 12px 20px 20px; } }
+</style>

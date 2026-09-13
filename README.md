@@ -88,3 +88,9 @@ Use HTTPS/WSS for the deployed event. Local HTTP is intended for a trusted devel
 Tap batches retain their server-received timestamps, apply the cooldown to those timestamps, and process at most three taps per update. Display transitions smooth delayed updates. Disconnecting keeps a player's lane, progress, and final result. Leaving in the lobby removes the player; during a race the participant stays on the board until the presenter clears players. Use **Clear players** between simulation runs to remove retained test swimmers.
 
 Local static serving is restricted to built pages and assets inside `dist`; rebuild with `npm run build` after client changes. Presenter authentication survives socket reconnects in page memory.
+
+## Client structure
+
+`src/PlayerApp.svelte` and `src/PresenterApp.svelte` coordinate race state and connections. Reusable UI lives in `src/components`: joining, character selection, pool lanes, race board, QR code, presenter controls, boosts, and the results dialog. Component layout styles are scoped to their Svelte files. `src/styles` contains shared design tokens, base styles, and SVG sprite animations. Vite bundles these styles once; the HTML pages only load their app entry points.
+
+Each character sprite has its own readable file in `src/swimmers`. `src/swimmers/index.js` registers the sprites; the root `swimmers.js` shares character identifiers and validation with the backend. The obsolete vanilla page scripts and DOM-based results renderer have been removed.

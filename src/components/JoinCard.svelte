@@ -16,3 +16,12 @@
     <p class="error" aria-live="polite">{error}</p>
   </form>
 </section>
+
+<style>
+
+  h1 { text-align: center; margin: 8px 0; font-size: 34px; }
+  .big-emoji { font-size: 64px; text-align: center; }
+  p { color: var(--muted); line-height: 1.45; }
+  form { display: grid; gap: var(--space-3); margin-top: 22px; }
+  .error { min-height: 1.4em; color: var(--danger); margin: 0; }
+</style>
