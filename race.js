@@ -16,6 +16,7 @@ const updateResults = createResults(document.querySelector(".race-main"), {
 });
 
 const presenterLogin = document.getElementById("presenterLogin");
+const presenterActions = document.getElementById("presenterActions");
 const presenterKeyInput = document.getElementById("presenterKey");
 const presenterAuthStatus = document.getElementById("presenterAuthStatus");
 let presenterAuthorized = false;
@@ -66,6 +67,7 @@ clearBtn.addEventListener("click", () => {
 
 function renderPlayers(players, raceState) {
   playerCount.textContent = `${players.length} swimmer${players.length === 1 ? "" : "s"}`;
+  lanes.classList.toggle("compact", players.length > 10);
 
   if (!players.length) {
     lanes.innerHTML = '<div class="empty-state">Waiting for swimmers to join…</div>';
@@ -97,7 +99,7 @@ function renderPlayers(players, raceState) {
       lane = document.createElement("div");
       lane.className = "lane";
       lane.innerHTML = `<div class="lane-name"><span class="lane-rank"></span><span class="lane-name-dot"></span><span class="swimmer-name"></span></div>
-        <div class="track"><div class="swimmer-wrap" aria-hidden="true">
+        <div class="track"><span class="track-player-name"></span><div class="swimmer-wrap" aria-hidden="true">
           <span class="splash"></span>
           ${swimmerMarkup(p.swimmer)}
         </div></div>`;
@@ -106,6 +108,7 @@ function renderPlayers(players, raceState) {
     }
     lane.querySelector(".lane-rank").textContent = ranking.find(([id]) => id === p.id)?.[1] ?? index + 1;
     lane.querySelector(".swimmer-name").textContent = p.name;
+    lane.querySelector(".track-player-name").textContent = p.name;
     lane.querySelector(".lane-name-dot").style.background = capColorFor(p);
     lane.style.setProperty("--cap-color", capColorFor(p));
     const swimmer = lane.querySelector(".swimmer-wrap");
@@ -254,6 +257,7 @@ function connect() {
       presenterAuthorized = message.ok;
       presenterAuthStatus.textContent = message.message;
       presenterLogin.classList.toggle("hidden", presenterAuthorized);
+      presenterActions.classList.toggle("hidden", !presenterAuthorized);
       if (!message.ok) presenterKey = "";
       updateControls();
     }
@@ -267,6 +271,7 @@ function connect() {
 
   ws.addEventListener("close", () => {
     presenterAuthorized = false;
+    presenterActions.classList.add("hidden");
     updateControls();
     startBtn.title = "Reconnecting to the race server";
     if (!connectionStatus.textContent.includes("setup")) connectionStatus.textContent = "Reconnecting to race…";

@@ -139,6 +139,24 @@ test('simultaneous taps for the same player cannot bypass the cooldown', async (
   assert.equal((await a.read()).players[0].distance, 1.45);
 });
 
+test('supports 50 players but rejects the 51st', async () => {
+  const store = createMemoryStore().store;
+  for (let index = 1; index <= 50; index++) {
+    const result = await store.update({
+      type: 'join', playerToken: `${String(index).padStart(2, '0')}-player-token-with-at-least-32-characters`,
+      playerId: `player-${index}`, name: `Player ${index}`
+    });
+    assert.equal(result.reply.ok, true);
+  }
+  const full = await store.update({
+    type: 'join', playerToken: '51-player-token-with-at-least-32-characters',
+    playerId: 'player-51', name: 'Player 51'
+  });
+  assert.equal(full.reply.ok, false);
+  assert.equal(full.reply.message, 'This race is full.');
+  assert.equal((await store.read()).players.length, 50);
+});
+
 test('missing storage reports an error instead of accepting a disconnected local-only join', async t => {
   const server = createRaceServer(() => { throw new Error('Missing Redis'); });
   t.after(() => server.close());

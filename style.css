@@ -215,6 +215,12 @@ input {
   flex-wrap: wrap;
 }
 
+.presenter-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .presenter-controls button:not(.primary) {
   background: rgba(255, 255, 255, .08);
   color: white;
@@ -232,6 +238,29 @@ input {
 .lanes {
   display: grid;
   gap: 10px;
+}
+
+.lanes.compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+}
+
+.lanes.compact .lane {
+  grid-template-columns: minmax(72px, 110px) 1fr;
+  gap: 8px;
+}
+
+.lanes.compact .lane-name {
+  font-size: clamp(13px, 1.25vw, 18px);
+}
+
+.lanes.compact .track {
+  min-height: 56px;
+}
+
+.lanes.compact .track::after {
+  top: 9px;
+  font-size: 26px;
 }
 
 .lane {
@@ -336,6 +365,10 @@ input {
 
   .lane {
     grid-template-columns: 90px 1fr;
+  }
+
+  .lanes.compact {
+    grid-template-columns: 1fr;
   }
 
   .race-footer {
@@ -646,6 +679,24 @@ input {
   border-bottom: 4px solid #a7c6cd;
   font-family: ui-monospace, monospace;
   font-size: clamp(14px, 1.6vw, 22px);
+}
+
+.track-player-name {
+  position: absolute;
+  top: 6px;
+  right: 18px;
+  z-index: 4;
+  max-width: calc(100% - 92px);
+  overflow: hidden;
+  color: #f7fbff;
+  font-family: ui-monospace, monospace;
+  font-size: clamp(12px, 1.35vw, 18px);
+  font-weight: 900;
+  line-height: 1.1;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 2px 2px #12547c;
 }
 
 .swimmer-name {
