@@ -12,6 +12,8 @@ let latestRace = null;
 let previousRaceState = null;
 let countdownTimer = null;
 let previousDistances = new Map();
+const laneElements = new Map();
+const strokeTimers = new Map();
 
 const capColors = [
   "#ff5f6d", "#ffd166", "#7bdff2", "#b2f7ef", "#cdb4db",
@@ -45,61 +47,70 @@ function renderPlayers(players, raceState) {
   if (!players.length) {
     lanes.innerHTML = '<div class="empty-state">Waiting for swimmers to join…</div>';
     previousDistances.clear();
+    laneElements.clear();
+    strokeTimers.forEach(clearTimeout);
+    strokeTimers.clear();
     return;
   }
 
   const sorted = [...players].sort((a, b) => b.distance - a.distance);
-  lanes.innerHTML = "";
+  if (!laneElements.size) lanes.innerHTML = "";
+  const activeIds = new Set(players.map(p => p.id));
+  for (const [id, lane] of laneElements) {
+    if (!activeIds.has(id)) {
+      lane.remove();
+      laneElements.delete(id);
+      previousDistances.delete(id);
+      clearTimeout(strokeTimers.get(id));
+      strokeTimers.delete(id);
+    }
+  }
 
   sorted.forEach((p, index) => {
-    const lane = document.createElement("div");
-    lane.className = "lane";
-
-    const name = document.createElement("div");
-    name.className = "lane-name";
-
-    const rank = document.createElement("span");
-    rank.className = "lane-rank";
-    rank.textContent = index + 1;
-
-    const dot = document.createElement("span");
-    dot.className = "lane-name-dot";
-    dot.style.background = capColorFor(p);
-
-    const nameText = document.createElement("span");
-    nameText.textContent = p.name;
-
-    name.append(rank, dot, nameText);
-
-    const track = document.createElement("div");
-    track.className = "track";
-
-    const swimmer = document.createElement("div");
-    swimmer.className = "swimmer-wrap";
-
+    let lane = laneElements.get(p.id);
+    if (!lane) {
+      lane = document.createElement("div");
+      lane.className = "lane";
+      lane.innerHTML = `<div class="lane-name"><span class="lane-rank"></span><span class="lane-name-dot"></span><span class="swimmer-name"></span></div>
+        <div class="track"><div class="swimmer-wrap" aria-hidden="true">
+          <span class="splash"></span>
+          <svg class="pixel-swimmer" viewBox="0 0 64 48" shape-rendering="crispEdges">
+            <g class="swim-leg leg-top"><path fill="#efb083" d="M5 18h21v6H5zM1 16h8v6H1z"/></g>
+            <g class="swim-leg leg-bottom"><path fill="#ffd1a3" d="M5 25h21v6H5zM1 28h8v6H1z"/></g>
+            <path fill="#182c55" d="M20 18h12v14H20z"/>
+            <path fill="#efb083" d="M30 17h15v16H30z"/>
+            <g class="swim-arm arm-top"><path fill="#ffd1a3" d="M37 18v-8h10V6h13v6H47v12h-10z"/></g>
+            <g class="swim-arm arm-bottom"><path fill="#efb083" d="M37 27v11H25v5H14v-6h17V27z"/></g>
+            <path fill="#ffd1a3" d="M44 19h13v13H44zM54 23h6v5h-6z"/>
+            <path fill="var(--cap-color)" d="M43 16h12v4h3v5H43z"/>
+            <path fill="#142d4c" d="M52 24h7v3h-7z"/>
+            <path fill="#fff" d="M53 24h3v2h-3z"/>
+          </svg>
+        </div></div>`;
+      laneElements.set(p.id, lane);
+    }
+    lane.querySelector(".lane-rank").textContent = index + 1;
+    lane.querySelector(".swimmer-name").textContent = p.name;
+    lane.querySelector(".lane-name-dot").style.background = capColorFor(p);
+    lane.style.setProperty("--cap-color", capColorFor(p));
+    const swimmer = lane.querySelector(".swimmer-wrap");
     const previous = previousDistances.get(p.id) ?? p.distance;
     if (raceState === "racing" && p.distance > previous) {
       swimmer.classList.add("moving");
+      clearTimeout(strokeTimers.get(p.id));
+      strokeTimers.set(p.id, setTimeout(() => {
+        swimmer.classList.remove("moving");
+        strokeTimers.delete(p.id);
+      }, 420));
+    } else if (raceState !== "racing") {
+      swimmer.classList.remove("moving");
+      clearTimeout(strokeTimers.get(p.id));
+      strokeTimers.delete(p.id);
     }
-
-    const splash = document.createElement("span");
-    splash.className = "splash";
-
-    const emoji = document.createElement("span");
-    emoji.className = "swimmer-emoji";
-    emoji.textContent = "🏊";
-
-    const cap = document.createElement("span");
-    cap.className = "swimmer-cap";
-    cap.style.background = capColorFor(p);
-
     const progress = Math.max(0, Math.min(100, p.distance));
-    swimmer.style.left = `calc(${progress}% - ${progress * 0.62}px)`;
-    swimmer.append(splash, emoji, cap);
-
-    track.appendChild(swimmer);
-    lane.append(name, track);
-    lanes.appendChild(lane);
+    swimmer.style.left = `calc(${progress}% - ${progress * 0.72}px)`;
+    // Preserve each swimmer's animation and movement transition between updates.
+    if (lanes.children[index] !== lane) lanes.insertBefore(lane, lanes.children[index] || null);
 
     previousDistances.set(p.id, p.distance);
   });

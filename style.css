@@ -493,3 +493,121 @@ input {
     animation: none;
   }
 }
+
+/* Phone joining instructions on the presenter screen. */
+.race-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+.race-header > .presenter-controls { grid-column: 1; }
+.race-header > .join-panel {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  justify-self: end;
+  flex-direction: row-reverse;
+}
+.join-panel { display: flex; align-items: center; gap: 16px; max-width: 460px; }
+#joinQr { flex: 0 0 160px; }
+#joinQr:empty { display: none; }
+#joinQr svg { display: block; width: 160px; height: 160px; background: white; border-radius: 8px; }
+.join-panel strong { font-size: 22px; }
+.join-panel a { display: block; color: var(--accent-2); overflow-wrap: anywhere; margin-top: 6px; }
+#networkChoice { margin-top: 8px; font-size: 12px; }
+#joinNetwork { display: block; max-width: 100%; margin-top: 4px; }
+@media (max-width: 760px) {
+  .race-header { grid-template-columns: minmax(0, 1fr); }
+  .race-header > .join-panel {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}
+@media (max-width: 400px) {
+  .race-header > .join-panel { flex-direction: column; align-items: flex-end; }
+}
+
+/* Pixel pool: tiled deck, lane ropes, and overhead swimming sprites. */
+.scoreboard {
+  padding: 16px;
+  border: 4px solid #8db5c5;
+  border-radius: 0;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 22px, #a7c6cd 22px 24px),
+    repeating-linear-gradient(90deg, #d4e5df 0 22px, #a7c6cd 22px 24px);
+  box-shadow: 0 6px 0 #416a81, 0 10px 0 #032235;
+}
+.lanes { gap: 0; border: 4px solid #123e60; background: #197ca9; }
+.lane { gap: 0; align-items: stretch; }
+.lane-name {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  color: #153850;
+  background: #d4e5df;
+  border-bottom: 4px solid #a7c6cd;
+  font-family: ui-monospace, monospace;
+  font-size: clamp(14px, 1.6vw, 22px);
+}
+.swimmer-name { overflow: hidden; text-overflow: ellipsis; }
+.lane-rank { flex-shrink: 0; border-radius: 0; background: #153850; color: white; }
+.lane-name-dot { flex-shrink: 0; border-radius: 0; }
+.track {
+  min-height: 88px;
+  border: 0;
+  border-radius: 0;
+  background:
+    linear-gradient(90deg, transparent calc(100% - 28px), #10527c calc(100% - 28px) calc(100% - 24px), transparent 0),
+    repeating-linear-gradient(0deg, transparent 0 20px, #ffffff0c 20px 24px),
+    repeating-linear-gradient(90deg, transparent 0 44px, #ffffff0c 44px 48px),
+    #239ec5;
+  box-shadow: inset 0 4px #ffffff38, inset 0 -4px #126d96;
+}
+.track::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 6px;
+  background: repeating-linear-gradient(90deg, #fff2cf 0 12px, #ff665a 12px 24px);
+  box-shadow: 0 -2px #15577e;
+  z-index: 3;
+}
+.track::after {
+  content: "";
+  right: 0;
+  top: 0;
+  width: 12px;
+  height: 100%;
+  background: repeating-conic-gradient(#173953 0% 25%, #eff9ec 0% 50%) 0 0 / 12px 12px;
+}
+.swimmer-wrap { top: 16px; width: 72px; height: 54px; filter: drop-shadow(0 4px 0 #08638866); }
+.pixel-swimmer { display: block; width: 72px; height: 54px; overflow: visible; }
+.swim-arm { transform-origin: 39px 25px; animation: arm-stroke .56s steps(4, end) infinite; animation-play-state: paused; }
+.arm-bottom { animation-delay: -.28s; }
+.swim-leg { transform-origin: 25px 25px; animation: leg-kick .28s steps(2, end) infinite alternate; animation-play-state: paused; }
+.leg-bottom { animation-delay: -.28s; }
+.moving .swim-arm, .moving .swim-leg { animation-play-state: running; }
+@keyframes arm-stroke {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(165deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes leg-kick { from { transform: rotate(-10deg); } to { transform: rotate(10deg); } }
+.splash::before, .splash::after {
+  border: 0;
+  border-radius: 0;
+  width: 4px;
+  height: 4px;
+  background: #d8ffff;
+  box-shadow: -8px -8px #d8ffff, -12px 8px #a7efff, 4px -16px #a7efff;
+}
+.swimmer-wrap.moving .splash { animation-timing-function: steps(2, end); }
+.empty-state { color: #e1faff; font-family: ui-monospace, monospace; text-shadow: 2px 2px #12547c; }
+@media (max-width: 760px) {
+  .scoreboard { padding: 8px; }
+  .lane-name { padding: 6px; }
+  .lane-name-dot { display: none; }
+  .lane-rank { min-width: 20px; margin-right: 5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .swim-arm, .swim-leg { animation: none; }
+}

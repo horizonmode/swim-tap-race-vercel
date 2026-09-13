@@ -17,7 +17,7 @@ Your URLs will be:
 - Players: `https://YOUR-PROJECT.vercel.app/`
 - Presenter: `https://YOUR-PROJECT.vercel.app/race`
 
-Turn the player URL into a QR code and put it on your presentation slide.
+The presenter screen displays a QR code that opens the player page.
 
 ## Run locally
 
@@ -32,6 +32,8 @@ Then open:
 
 - Player: `http://localhost:3000/`
 - Presenter: `http://localhost:3000/race`
+
+Scan the QR code on the presenter screen with a phone on the same Wi-Fi. The local server supplies your computer’s network address automatically. If several addresses appear, choose the one for your Wi-Fi network.
 
 ## Important Vercel beta note
 

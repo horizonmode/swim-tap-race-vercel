@@ -1,12 +1,13 @@
-
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Swim Tap Race — Presenter</title>
   <link rel="stylesheet" href="/style.css">
 </head>
+
 <body class="race-page">
   <header class="race-header">
     <div>
@@ -14,6 +15,17 @@
       <h1>Swim Tap Race 🏊</h1>
       <p id="joinText">Players: open this site on your phone and join the race.</p>
     </div>
+    <aside class="join-panel" aria-label="Join the race">
+      <div id="joinQr" role="img" aria-label="QR code to join the race"></div>
+      <div>
+        <strong>Scan to join</strong>
+        <p id="joinHint">Open the camera on your phone.</p>
+        <a id="joinLink"></a>
+        <label id="networkChoice" class="hidden">Network address
+          <select id="joinNetwork" aria-label="Network address"></select>
+        </label>
+      </div>
+    </aside>
     <div class="presenter-controls">
       <button id="startBtn" class="primary" type="button">Start race</button>
       <button id="resetBtn" type="button">Reset</button>
@@ -34,9 +46,12 @@
 
   <footer class="race-footer">
     <span id="playerCount">0 swimmers</span>
-    <span>Fastest fingers win.</span>
+    <span>Tap to Swim.</span>
   </footer>
 
+  <script src="/vendor/qrcode.js"></script>
+  <script src="/join.js"></script>
   <script src="/race.js"></script>
 </body>
+
 </html>

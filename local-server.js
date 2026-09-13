@@ -1,3 +1,4 @@
+import { networkInterfaces } from "node:os";
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, join } from "node:path";
@@ -14,6 +15,14 @@ let race = { state: "lobby", startedAt: null, winnerId: null, countdownEndsAt: n
 
 const mime = { ".html":"text/html", ".js":"text/javascript", ".css":"text/css" };
 const server = createServer(async (req, res) => {
+  if (req.url === "/api/join-info") {
+    const addresses = [...new Set(Object.values(networkInterfaces()).flat()
+      .filter(address => address.family === "IPv4" && !address.internal)
+      .map(address => address.address))];
+    res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
+    res.end(JSON.stringify({ urls: addresses.map(address => `http://${address}:${PORT}/`) }));
+    return;
+  }
   if (req.url?.startsWith("/api/ws")) return;
   const pathname = req.url === "/" ? "/index.html" : req.url === "/race" ? "/race.html" : req.url.split("?")[0];
   try {
