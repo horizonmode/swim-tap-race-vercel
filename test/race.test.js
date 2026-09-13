@@ -115,7 +115,7 @@ test('concurrent instances preserve joins, enforce unique names and keep a singl
   await a.update({ type: 'presenter:start' }, null, 1000);
   // Any instance can advance a countdown after the original instance disappears.
   await b.update({ type: 'tick' }, null, 4000);
-  for (let tap = 0; tap < 69; tap++) {
+  for (let tap = 0; tap < 100; tap++) {
     await Promise.all([a.update({ type: 'tap', playerToken: 'test-player-token-0000000000000000' }, 'a', 4000 + tap * 60), b.update({ type: 'tap', playerToken: 'test-player-token-0000000000000000' }, 'b', 4000 + tap * 60)]);
   }
   const result = await a.read();
