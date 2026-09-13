@@ -72,6 +72,8 @@ test('player join on one instance updates a presenter on another, including imme
   await settle();
   assert.equal(reconnected.messages.filter(m => m.type === 'joinResult').at(-1).ok, true);
   assert.equal(reconnected.messages.filter(m => m.type === 'gameState').at(-1).players[0].swimmer, 'cat');
+  presenter.command({ type: 'presenter:start' });
+  await settle();
   // Finish the race, then reset from the presenter on the other instance.
   const store = storage().store;
   const started = await store.read();
