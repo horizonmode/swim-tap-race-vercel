@@ -15,8 +15,8 @@
   let countdownTimer;
   let results;
   let myId = null;
-  let joinedName = "";
-  let name = "";
+  let joinedName = sessionStorage.getItem("swim-player-name") || "";
+  let name = joinedName;
   let joinError = "";
   let hint = "Wait for the presenter to start the race.";
   let raceStatus = "Waiting…";
@@ -126,6 +126,7 @@
         }
         joinError = "";
         myId = message.id;
+        sessionStorage.setItem("swim-player-name", joinedName);
         gameCard.classList.remove("hidden");
         joinCard.classList.add("hidden");
       } else if (message.type === "gameState") {
@@ -142,6 +143,7 @@
   function join() {
     joinError = "";
     joinedName = name.trim();
+    sessionStorage.setItem("swim-player-name", joinedName);
     if (!joinedName) {
       joinError = "Enter a name first.";
       return;
@@ -157,6 +159,7 @@
     myId = null;
     joinedName = "";
     name = "";
+    sessionStorage.removeItem("swim-player-name");
     myPlayer = null;
     lastDistance = 0;
     gameCard.classList.add("hidden");
