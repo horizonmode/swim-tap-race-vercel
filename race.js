@@ -76,7 +76,9 @@ function renderPlayers(players, raceState) {
     return;
   }
 
-  const sorted = [...players].sort((a, b) => b.distance - a.distance);
+  const ranking = [...players]
+    .sort((a, b) => b.distance - a.distance)
+    .map((player, index) => [player.id, index + 1]);
   if (!laneElements.size) lanes.innerHTML = "";
   const activeIds = new Set(players.map(p => p.id));
   for (const [id, lane] of laneElements) {
@@ -89,7 +91,7 @@ function renderPlayers(players, raceState) {
     }
   }
 
-  sorted.forEach((p, index) => {
+  players.forEach((p, index) => {
     let lane = laneElements.get(p.id);
     if (!lane) {
       lane = document.createElement("div");
@@ -102,7 +104,7 @@ function renderPlayers(players, raceState) {
       lane.dataset.swimmer = normalizeSwimmer(p.swimmer);
       laneElements.set(p.id, lane);
     }
-    lane.querySelector(".lane-rank").textContent = index + 1;
+    lane.querySelector(".lane-rank").textContent = ranking.find(([id]) => id === p.id)?.[1] ?? index + 1;
     lane.querySelector(".swimmer-name").textContent = p.name;
     lane.querySelector(".lane-name-dot").style.background = capColorFor(p);
     lane.style.setProperty("--cap-color", capColorFor(p));
