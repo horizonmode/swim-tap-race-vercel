@@ -78,9 +78,6 @@ function renderPlayers(players, raceState) {
     return;
   }
 
-  const ranking = [...players]
-    .sort((a, b) => b.distance - a.distance)
-    .map((player, index) => [player.id, index + 1]);
   if (!laneElements.size) lanes.innerHTML = "";
   const activeIds = new Set(players.map(p => p.id));
   for (const [id, lane] of laneElements) {
@@ -98,7 +95,7 @@ function renderPlayers(players, raceState) {
     if (!lane) {
       lane = document.createElement("div");
       lane.className = "lane";
-      lane.innerHTML = `<div class="lane-name"><span class="lane-rank"></span><span class="lane-name-dot"></span><span class="swimmer-name"></span></div>
+      lane.innerHTML = `<div class="lane-name"><span class="lane-name-dot"></span><span class="swimmer-name"></span></div>
         <div class="track"><span class="track-player-name"></span><div class="swimmer-wrap" aria-hidden="true">
           <span class="splash"></span>
           ${swimmerMarkup(p.swimmer)}
@@ -106,7 +103,6 @@ function renderPlayers(players, raceState) {
       lane.dataset.swimmer = normalizeSwimmer(p.swimmer);
       laneElements.set(p.id, lane);
     }
-    lane.querySelector(".lane-rank").textContent = ranking.find(([id]) => id === p.id)?.[1] ?? index + 1;
     lane.querySelector(".swimmer-name").textContent = p.name;
     lane.querySelector(".track-player-name").textContent = p.name;
     lane.querySelector(".lane-name-dot").style.background = capColorFor(p);

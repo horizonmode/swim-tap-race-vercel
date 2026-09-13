@@ -33,7 +33,7 @@ cp .env.example .env # first checkout only; keep your existing .env
 npm run dev
 ```
 
-The server automatically loads `.env`. Set `PRESENTER_KEY` to any non-empty word or phrase (up to 256 characters) and enter it on the presenter screen to unlock controls. Set `REDIS_URL` to test the shared Redis backend locally, or leave it blank for in-memory play. `PORT` defaults to 3000 and `RACE_ROOM=local` keeps local testing separate from production. Restart the server after changing variables. `.env` is ignored by Git and cannot be downloaded from the local server.
+The server automatically loads `.env`. Set `PRESENTER_KEY` to any non-empty word or phrase (up to 256 characters) and enter it on the presenter screen to unlock controls. Local play uses in-memory storage by default; set `LOCAL_REDIS=true` only when explicitly testing the shared Redis backend locally. `REDIS_URL` is still required for deployed Vercel WebSockets. `PORT` defaults to 3000 and `RACE_ROOM=local` keeps local testing separate from production. Restart the server after changing variables. `.env` is ignored by Git and cannot be downloaded from the local server.
 
 Then open:
 
