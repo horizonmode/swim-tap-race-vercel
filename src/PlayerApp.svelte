@@ -30,6 +30,17 @@
   let motionMs = 0;
   let moving = false;
   let strokeTimer;
+  let boost = null;
+  let boostClock = Date.now();
+  let boostClockTimer;
+  let connected = false;
+  $: boostVisible = connected && myId && race?.state === "racing" && boost && !boost.used && boostClock >= boost.opensAt && boostClock < boost.expiresAt;
+  function claimBoost() {
+    if (boostVisible && send("boost", { boostId: boost.id })) {
+      boost = { ...boost, used: true };
+      animateStroke();
+    }
+  }
 
   $: progress = Math.max(0, Math.min(100, myPlayer?.distance || 0));
 
@@ -114,12 +125,15 @@
     clearTimeout(reconnectTimer);
     ws = new WebSocket(wsUrl());
     ws.addEventListener("open", () => {
+      connected = true;
       if (joinedName) send("join", { playerId, playerToken, name: joinedName, swimmer: selectedSwimmer });
     });
     ws.addEventListener("message", (event) => {
       let message;
       try { message = JSON.parse(event.data); } catch { return; }
-      if (message.type === "serverError") {
+      if (message.type === "boostStatus") {
+        boost = message.boost;
+      } else if (message.type === "serverError") {
         joinError = message.message;
         hint = message.message;
       } else if (message.type === "joinResult") {
@@ -138,6 +152,8 @@
       }
     });
     ws.addEventListener("close", () => {
+      connected = false;
+      boost = null;
       raceStatus = "Reconnecting…";
       reconnectTimer = setTimeout(connect, 900);
     });
@@ -173,11 +189,13 @@
   onMount(() => {
     document.body.className = "player-page";
     results = createResults(gameCard);
+    boostClockTimer = setInterval(() => { boostClock = Date.now(); }, 100);
     connect();
     return () => {
       clearTimeout(reconnectTimer);
       clearInterval(countdownTimer);
       clearTimeout(strokeTimer);
+      clearInterval(boostClockTimer);
       ws?.close();
     };
   });
@@ -225,6 +243,11 @@
     <button class="tap-button" type="button" disabled={!race || race.state !== "racing"} on:pointerdown|preventDefault={() => send("tap")}>
       {race?.state === "racing" ? "TAP TO SWIM" : "GET READY"}
     </button>
+    <div class="boost-slot" aria-live="polite">
+      {#if boostVisible}
+        <button class="boost-button" type="button" on:pointerdown|preventDefault={claimBoost}>⚡ BOOST! <span>+6% · tap now</span></button>
+      {/if}
+    </div>
     <p id="hint">{hint}</p>
     <button class="reset-player" type="button" on:click={resetPlayer}>Leave race</button>
   </section>

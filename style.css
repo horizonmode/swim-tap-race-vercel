@@ -1086,3 +1086,9 @@ input {
 @media (prefers-reduced-motion: reduce) {
   .swimmer-wrap { transition-duration: 0ms !important; }
 }
+
+.boost-slot { min-height: 76px; padding-top: 12px; }
+.boost-button { width: 100%; border-radius: 0; border: 3px solid #fff0ac; background: #ffd166; color: #352247; box-shadow: 0 4px 0 #b88228; font-size: 26px; }
+.boost-button span { display: block; font-size: 13px; }
+.boost-button:active { transform: translateY(3px); box-shadow: none; }
+.boost-button:focus-visible { outline: 3px solid white; outline-offset: 3px; }
