@@ -10,7 +10,7 @@ A tiny real-time multiplayer race for a wellbeing presentation.
 4. Do not set a build command.
 5. In the project's **Storage** tab, connect an **Upstash Redis** database through the Vercel Marketplace. Choose a region near London where available.
 6. Under **Settings → Environment Variables**, ensure `REDIS_URL` is set for **Production** to the database's Redis connection URL (`rediss://…`). The integration may add this automatically. Use the Redis URL, not the REST API URL/token, and keep it server-side.
-7. Add a private `PRESENTER_KEY` (any non-empty word or phrase, up to 256 characters) to Production. You can use the generated key in your local `.env`; never put it in the QR URL or client code. Set `ALLOWED_ORIGINS=https://swim-tap-race-vercel.vercel.app` for this site (change it if you use another domain). Multiple exact origins can be comma-separated, without trailing slashes. Vercel's generated deployment/branch domains are also allowed automatically when its system variables are available.
+7. Add a private `PRESENTER_KEY` (any non-empty word or phrase, up to 256 characters) to Production. You can use the generated key in your local `.env`; never put it in the QR URL or client code. Set `ALLOWED_ORIGINS=https://swim-tap.vercel.app` for this site (change it if you use another domain). Multiple exact origins can be comma-separated, without trailing slashes. Vercel's generated deployment/branch domains are also allowed automatically when its system variables are available.
 8. Make sure **Fluid Compute** is enabled, then deploy (or redeploy after adding environment variables).
 9. Open the production `/race` page and enter the presenter key to unlock the controls. Scan its QR code on a phone and join. The presenter should list the swimmer immediately. Check Start, tapping, Reset, and Clear players from a second device.
 
@@ -64,7 +64,7 @@ In `lib/race-state.js` for deployment (and `local-server.js` for local play):
 
 - Maximum players: 20
 - Tap cooldown: 55 ms
-- Distance per accepted tap: 1.0
+- Distance per accepted tap: 1.2
 
 ## Presenter controls
 

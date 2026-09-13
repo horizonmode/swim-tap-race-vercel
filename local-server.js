@@ -30,11 +30,24 @@ const handleRequest = async (req, res) => {
   if (req.url?.startsWith("/api/ws")) { res.writeHead(426); res.end("WebSocket connection required"); return; }
   const pathname = req.url === "/" ? "/index.html" : req.url === "/race" ? "/race.html" : req.url.split("?")[0];
   // Only serve public assets; never expose local credentials or server source.
-  if (!publicFiles.has(pathname)) {
+  const builtAsset = pathname.startsWith("/assets/");
+  if (!publicFiles.has(pathname) && !builtAsset) {
     res.writeHead(404); res.end("Not found"); return;
   }
   try {
-    const data = await readFile(join(root, pathname));
+    const candidates = builtAsset || pathname === "/index.html" || pathname === "/race.html"
+      ? [join(root, "dist", pathname), join(root, pathname)]
+      : [join(root, pathname)];
+    let data;
+    for (const candidate of candidates) {
+      try {
+        data = await readFile(candidate);
+        break;
+      } catch {
+        // Try the next compatible static root.
+      }
+    }
+    if (!data) throw new Error("Asset not found");
     res.writeHead(200, { "content-type": mime[extname(pathname)] || "application/octet-stream" });
     res.end(data);
   } catch {

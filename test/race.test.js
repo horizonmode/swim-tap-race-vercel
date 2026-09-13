@@ -136,7 +136,7 @@ test('simultaneous taps for the same player cannot bypass the cooldown', async (
   await a.update({ type: 'presenter:start' }, null, 1000);
   await a.update({ type: 'tick' }, null, 4000);
   await Promise.all([a.update({ type: 'tap', playerToken: 'test-player-token-0000000000000000' }, 'a', 4000), b.update({ type: 'tap', playerToken: 'test-player-token-0000000000000000' }, 'a', 4000)]);
-  assert.equal((await a.read()).players[0].distance, 1);
+  assert.equal((await a.read()).players[0].distance, 1.2);
 });
 
 test('supports 50 players but rejects the 51st', async () => {
@@ -290,7 +290,7 @@ test('an old connection token cannot tap for a player ID reused after clearing',
   await store.update({ type: 'tap', playerToken: TOKEN }, 'same', 4000);
   assert.equal((await store.read()).players[0].distance, 0);
   await store.update({ type: 'tap', playerToken: newToken }, 'same', 4000);
-  assert.equal((await store.read()).players[0].distance, 1);
+  assert.equal((await store.read()).players[0].distance, 1.2);
 });
 
 test('presenter keys accept a single character, words and phrases while rejecting incorrect values', async t => {

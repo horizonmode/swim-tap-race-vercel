@@ -5,17 +5,23 @@
   "type": "module",
   "description": "Multiplayer tap-to-swim race for Vercel WebSockets",
   "scripts": {
-    "dev": "node local-server.js",
-    "start": "node local-server.js",
+    "dev": "npm run build && node local-server.js",
+    "start": "npm run build && node local-server.js",
+    "build": "vite build",
     "test": "node --test",
     "simulate": "node scripts/simulate-users.js"
   },
   "dependencies": {
     "ioredis": "^6.0.0",
     "qrcode-generator": "^2.0.4",
+    "svelte": "^5.57.0",
     "ws": "^8.18.3"
   },
   "engines": {
     "node": ">=20.12"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.3.0",
+    "vite": "^8.3.0"
   }
 }
