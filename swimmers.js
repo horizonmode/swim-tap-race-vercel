@@ -94,11 +94,30 @@ export function swimmerMarkup(value) {
     <path fill="#333" d="M48 28h2v3h-2z"/>
     <path fill="#f4f4f4" d="M33 24h7v2h-7zM32 29h9v2h-9zM57 24h7v2h-7zM57 29h7v2h-7z"/>
   </svg>`;
-  const color = { dog: "#bc8154", frog: "#82d96b", duck: "#87939a" }[kind];
+  if (kind === "duck") return `<svg class="pixel-swimmer duck-swimmer" viewBox="0 0 64 48" shape-rendering="crispEdges" aria-hidden="true">
+    <!-- Mallard silhouette: raised green head, broad bill and a floating oval body. -->
+    <g class="swim-leg leg-top"><path fill="#e98a24" d="M22 32v7H12v4h16V32z"/></g>
+    <g class="swim-leg leg-bottom"><path fill="#ffb33b" d="M32 33v8H22v4h16V33z"/></g>
+    <path fill="#4c5d62" d="M5 21h9v-4h24v4h7v13h-7v4H14v-4H9v-5H5z"/>
+    <path fill="#b9c2bf" d="M12 22h27v10h-5v3H17v-3h-5z"/>
+    <path fill="#ebeee0" d="M15 30h21v5H18v-2h-3z"/>
+    <path fill="#714b35" d="M36 19h9v16h-9z"/>
+    <path fill="#146c48" d="M37 10h4V6h12v3h4v12h-5v8H39V19h-2z"/>
+    <path fill="#25975e" d="M41 10h11v4H41z"/>
+    <path fill="#f7f2d9" d="M39 25h13v4H39z"/>
+    <path fill="#172c35" d="M49 13h4v4h-4z"/><path fill="#fff" d="M50 13h2v2h-2z"/>
+    <path fill="#ffcf47" d="M54 17h10v6H53v-3h1z"/>
+    <path fill="#d18b22" d="M54 22h10v3H54z"/>
+    <path fill="#72542f" d="M58 18h2v2h-2z"/>
+    <g class="duck-wing"><path fill="#7b8e92" d="M17 23h16v3h4v5H21v-3h-4z"/>
+      <path fill="#426bc4" d="M23 26h11v4H23z"/><path fill="#faf5df" d="M22 30h14v2H22z"/>
+    </g>
+    <path fill="var(--cap-color, #5dd7ff)" d="M39 29h4v5h-4z"/>
+  </svg>`;
+  const color = { dog: "#bc8154", frog: "#82d96b" }[kind];
   const head = {
     dog: '<path fill="#bc8154" d="M42 15h15v6h6v11H42z"/><path fill="#684737" d="M41 14h7v17h-7z"/><path fill="#efd3a3" d="M53 23h10v9H53z"/><path fill="#263954" d="M53 18h3v3h-3zM60 23h4v4h-4z"/><path fill="#ff8e98" d="M58 32h4v5h-4z"/>',
     frog: '<path fill="#82d96b" d="M42 14h16v6h5v13H42zM46 9h9v9h-9z"/><path fill="#fffbe2" d="M48 10h6v6h-6z"/><path fill="#263954" d="M51 11h3v4h-3zM52 28h11v3H52z"/>',
-    duck: '<path fill="#174a3b" d="M40 15h4V9h5V5h12v4h3v5h-3v5h3v4h-4v9H43v-4h-5v-8h2z"/><path fill="#f4f4ed" d="M42 19h17v4H42z"/><path fill="#7b422b" d="M43 23h15v9H43z"/><path fill="#263954" d="M53 13h4v4h-4z"/><path fill="#fff" d="M54 13h2v2h-2z"/><path fill="#f5b52e" d="M57 20h7v4h-4v5h-7v-5h4z"/><path fill="#c77b1d" d="M57 24h7v3h-7z"/><path fill="#4d8c9d" d="M28 22h10v9H28z"/>'
   }[kind];
   return `<svg class="pixel-swimmer animal-swimmer" viewBox="0 0 64 48" shape-rendering="crispEdges" aria-hidden="true">
     <path fill="${color}" d="M19 21H9v-9H5v14h14z"/>

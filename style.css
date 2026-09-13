@@ -1092,3 +1092,8 @@ input {
 .boost-button span { display: block; font-size: 13px; }
 .boost-button:active { transform: translateY(3px); box-shadow: none; }
 .boost-button:focus-visible { outline: 3px solid white; outline-offset: 3px; }
+
+.duck-wing { transform-origin: 32px 27px; animation: duck-paddle .4s steps(2, end) infinite alternate; animation-play-state: paused; }
+.moving .duck-wing { animation-play-state: running; }
+@keyframes duck-paddle { from { transform: translateY(0); } to { transform: translateY(-2px); } }
+@media (prefers-reduced-motion: reduce) { .duck-wing { animation: none; } }
