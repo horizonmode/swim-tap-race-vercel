@@ -26,5 +26,37 @@ function element() {
 
 test('presenter dismissal resets once; broadcast lobby closes client results without another reset', async t => {
   const dialogs = [];
-  t.mock.method(globalThis, 'document', undefined);
+  const original = globalThis.document;
+  globalThis.document = {
+    body: element(),
+    createElement(tag) {
+      const node = element();
+      if (tag === 'dialog') dialogs.push(node);
+      return node;
+    }
+  };
+  t.after(() => {
+    if (original === undefined) delete globalThis.document;
+    else globalThis.document = original;
+  });
+  let resets = 0;
+  const presenter = createResults(element(), { onDismiss: () => resets++ });
+  const client = createResults(element());
+  const finished = { race: { state: 'finished' }, players: [] };
+  const lobby = { race: { state: 'lobby' }, players: [] };
+  presenter(finished);
+  client(finished);
+  dialogs[0].close();
+  await Promise.resolve();
+  assert.equal(resets, 1);
+  presenter(lobby);
+  client(lobby);
+  await Promise.resolve();
+  assert.equal(dialogs[1].open, false);
+  assert.equal(resets, 1);
+  // A reset from another presenter must not cause an extra command.
+  presenter(finished);
+  presenter(lobby);
+  await Promise.resolve();
+  assert.equal(resets, 1);
 });
