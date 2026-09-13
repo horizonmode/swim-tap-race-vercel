@@ -611,3 +611,23 @@ input {
 @media (prefers-reduced-motion: reduce) {
   .swim-arm, .swim-leg { animation: none; }
 }
+
+/* Accessible character selection with the same pixel sprites used in the pool. */
+.swimmer-picker { border: 0; margin: 4px 0; padding: 0; min-width: 0; }
+.swimmer-picker legend { font-weight: 800; margin-bottom: 10px; }
+.swimmer-choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.swimmer-choice { position: relative; cursor: pointer; min-width: 0; }
+.swimmer-choice input { position: absolute; width: 1px; height: 1px; opacity: 0; padding: 0; }
+.swimmer-option { display: grid; justify-items: center; padding: 6px 2px 10px; border: 2px solid #46677e; background: #08243a; font-size: 12px; }
+.swimmer-option .pixel-swimmer { width: 64px; height: 48px; max-width: 100%; --cap-color: #5dd7ff; }
+.swimmer-choice input:checked + .swimmer-option { border-color: #9cecff; background: #145477; box-shadow: 0 3px 0 #5dd7ff; }
+.swimmer-choice input:focus-visible + .swimmer-option { outline: 3px solid white; outline-offset: 3px; }
+.mini-swimmer { width: 72px; height: 54px; top: 10px; --cap-color: #5dd7ff; }
+@media (max-width: 380px) { .swimmer-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Cats paddle their paws while keeping their face and ears readable. */
+.cat-swimmer .swim-arm { animation-name: cat-paddle; animation-direction: alternate; }
+@keyframes cat-paddle {
+  from { transform: translate(-3px, 0); }
+  to { transform: translate(4px, 2px); }
+}

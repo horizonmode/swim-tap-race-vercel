@@ -16,6 +16,10 @@
       <form id="joinForm">
         <label for="name">Your name</label>
         <input id="name" maxlength="18" autocomplete="nickname" placeholder="e.g. Seb">
+        <fieldset class="swimmer-picker">
+          <legend>Pick your swimmer</legend>
+          <div id="swimmerChoices" class="swimmer-choices"></div>
+        </fieldset>
         <button class="primary" type="submit">Join race</button>
         <p id="joinError" class="error" aria-live="polite"></p>
       </form>
@@ -27,7 +31,7 @@
         <strong id="raceStatus">Waiting…</strong>
       </div>
       <div class="mini-track">
-        <div class="mini-swimmer" id="miniSwimmer">🏊</div>
+        <div class="mini-swimmer" id="miniSwimmer" aria-hidden="true"></div>
       </div>
       <button id="tapButton" class="tap-button" type="button" disabled>
         TAP TO SWIM
@@ -36,6 +40,6 @@
     </section>
   </main>
 
-  <script src="/player.js"></script>
+  <script type="module" src="/player.js"></script>
 </body>
 </html>

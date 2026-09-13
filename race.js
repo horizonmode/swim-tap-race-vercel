@@ -1,3 +1,4 @@
+import { normalizeSwimmer, swimmerMarkup } from "./swimmers.js";
 const connectionStatus = document.getElementById("connectionStatus");
 const lanes = document.getElementById("lanes");
 const playerCount = document.getElementById("playerCount");
@@ -75,19 +76,9 @@ function renderPlayers(players, raceState) {
       lane.innerHTML = `<div class="lane-name"><span class="lane-rank"></span><span class="lane-name-dot"></span><span class="swimmer-name"></span></div>
         <div class="track"><div class="swimmer-wrap" aria-hidden="true">
           <span class="splash"></span>
-          <svg class="pixel-swimmer" viewBox="0 0 64 48" shape-rendering="crispEdges">
-            <g class="swim-leg leg-top"><path fill="#efb083" d="M5 18h21v6H5zM1 16h8v6H1z"/></g>
-            <g class="swim-leg leg-bottom"><path fill="#ffd1a3" d="M5 25h21v6H5zM1 28h8v6H1z"/></g>
-            <path fill="#182c55" d="M20 18h12v14H20z"/>
-            <path fill="#efb083" d="M30 17h15v16H30z"/>
-            <g class="swim-arm arm-top"><path fill="#ffd1a3" d="M37 18v-8h10V6h13v6H47v12h-10z"/></g>
-            <g class="swim-arm arm-bottom"><path fill="#efb083" d="M37 27v11H25v5H14v-6h17V27z"/></g>
-            <path fill="#ffd1a3" d="M44 19h13v13H44zM54 23h6v5h-6z"/>
-            <path fill="var(--cap-color)" d="M43 16h12v4h3v5H43z"/>
-            <path fill="#142d4c" d="M52 24h7v3h-7z"/>
-            <path fill="#fff" d="M53 24h3v2h-3z"/>
-          </svg>
+          ${swimmerMarkup(p.swimmer)}
         </div></div>`;
+      lane.dataset.swimmer = normalizeSwimmer(p.swimmer);
       laneElements.set(p.id, lane);
     }
     lane.querySelector(".lane-rank").textContent = index + 1;
@@ -95,6 +86,10 @@ function renderPlayers(players, raceState) {
     lane.querySelector(".lane-name-dot").style.background = capColorFor(p);
     lane.style.setProperty("--cap-color", capColorFor(p));
     const swimmer = lane.querySelector(".swimmer-wrap");
+    if (lane.dataset.swimmer !== normalizeSwimmer(p.swimmer)) {
+      swimmer.querySelector(".pixel-swimmer").outerHTML = swimmerMarkup(p.swimmer);
+      lane.dataset.swimmer = normalizeSwimmer(p.swimmer);
+    }
     const previous = previousDistances.get(p.id) ?? p.distance;
     if (raceState === "racing" && p.distance > previous) {
       swimmer.classList.add("moving");

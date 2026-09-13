@@ -1,3 +1,4 @@
+import { swimmerOptions, normalizeSwimmer, swimmerMarkup } from "./swimmers.js";
 const joinCard = document.getElementById("joinCard");
 const gameCard = document.getElementById("gameCard");
 const joinForm = document.getElementById("joinForm");
@@ -14,6 +15,24 @@ sessionStorage.setItem("swim-player-id", playerId);
 
 let myId = null;
 let joinedName = "";
+let selectedSwimmer = normalizeSwimmer(sessionStorage.getItem("swim-character"));
+let strokeTimer;
+let lastDistance = 0;
+const choices = document.getElementById("swimmerChoices");
+for (const option of swimmerOptions) {
+  const label = document.createElement("label");
+  label.className = "swimmer-choice";
+  label.innerHTML = `<input type="radio" name="swimmer" value="${option.id}"><span class="swimmer-option"><span aria-hidden="true">${swimmerMarkup(option.id)}</span><span>${option.name}</span></span>`;
+  const radio = label.querySelector("input");
+  radio.checked = option.id === selectedSwimmer;
+  radio.addEventListener("change", () => {
+    selectedSwimmer = radio.value;
+    sessionStorage.setItem("swim-character", selectedSwimmer);
+    miniSwimmer.innerHTML = swimmerMarkup(selectedSwimmer);
+  });
+  choices.appendChild(label);
+}
+miniSwimmer.innerHTML = swimmerMarkup(selectedSwimmer);
 let ws;
 let reconnectTimer;
 
@@ -35,7 +54,7 @@ function connect() {
   ws = new WebSocket(wsUrl());
 
   ws.addEventListener("open", () => {
-    if (joinedName) send("join", { playerId, name: joinedName });
+    if (joinedName) send("join", { playerId, name: joinedName, swimmer: selectedSwimmer });
   });
 
   ws.addEventListener("message", (event) => {
@@ -68,8 +87,22 @@ function connect() {
       const me = players.find((p) => p.id === myId);
       if (!me) return;
 
+      const character = normalizeSwimmer(me.swimmer);
+      if (miniSwimmer.dataset.swimmer !== character) {
+        miniSwimmer.innerHTML = swimmerMarkup(character);
+        miniSwimmer.dataset.swimmer = character;
+      }
+      if (race.state === "racing" && me.distance > lastDistance) {
+        miniSwimmer.classList.add("moving");
+        clearTimeout(strokeTimer);
+        strokeTimer = setTimeout(() => miniSwimmer.classList.remove("moving"), 420);
+      } else if (race.state !== "racing") {
+        clearTimeout(strokeTimer);
+        miniSwimmer.classList.remove("moving");
+      }
+      lastDistance = me.distance;
       const progress = Math.max(0, Math.min(100, me.distance));
-      miniSwimmer.style.left = `calc(${progress}% - ${progress * 0.46}px)`;
+      miniSwimmer.style.left = `calc(${progress}% - ${progress * 0.72}px)`;
 
       if (race.state === "lobby") {
         raceStatus.textContent = "Waiting";
@@ -116,7 +149,7 @@ joinForm.addEventListener("submit", (event) => {
     joinError.textContent = "Enter a name first.";
     return;
   }
-  if (!send("join", { playerId, name: joinedName })) {
+  if (!send("join", { playerId, name: joinedName, swimmer: selectedSwimmer })) {
     joinError.textContent = "Connecting… try again in a moment.";
   }
 });

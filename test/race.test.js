@@ -44,10 +44,11 @@ test('player join on one instance updates a presenter on another, including imme
   t.after(() => { a.close(); b.close(); });
   const presenter = socket(a);
   const player = socket(b);
-  player.command({ type: 'join', playerId: 'one', name: 'Swimmer' });
+  player.command({ type: 'join', playerId: 'one', name: 'Swimmer', swimmer: 'cat' });
   await settle();
   assert.equal(player.messages.find(m => m.type === 'joinResult').ok, true);
   assert.equal(presenter.messages.filter(m => m.type === 'gameState').at(-1).players[0].name, 'Swimmer');
+  assert.equal(presenter.messages.filter(m => m.type === 'gameState').at(-1).players[0].swimmer, 'cat');
   presenter.command({ type: 'presenter:start' });
   await settle();
   assert.equal(player.messages.filter(m => m.type === 'gameState').at(-1).race.state, 'countdown');
@@ -56,6 +57,7 @@ test('player join on one instance updates a presenter on another, including imme
   reconnected.command({ type: 'join', playerId: 'one', name: 'Swimmer' });
   await settle();
   assert.equal(reconnected.messages.find(m => m.type === 'joinResult').ok, true);
+  assert.equal(reconnected.messages.filter(m => m.type === 'gameState').at(-1).players[0].swimmer, 'cat');
   presenter.command({ type: 'presenter:clear' });
   await settle();
   assert.equal(reconnected.messages.filter(m => m.type === 'gameState').at(-1).players.length, 0);
@@ -110,4 +112,13 @@ test('missing storage reports an error instead of accepting a disconnected local
   assert.equal(player.messages[0].type, 'serverError');
   assert.equal(player.readyState, 3);
   assert.ok(!player.messages.some(m => m.type === 'joinResult' && m.ok));
+});
+
+test('character choices persist through reset and invalid choices fall back safely', async () => {
+  const store = database()().store;
+  await store.update({ type: 'join', playerId: 'dog', name: 'Dog', swimmer: 'dog' });
+  await store.update({ type: 'join', playerId: 'frog', name: 'Frog', swimmer: 'frog' });
+  await store.update({ type: 'join', playerId: 'bad', name: 'Fallback', swimmer: '<script>' });
+  await store.update({ type: 'presenter:reset' });
+  assert.deepEqual((await store.read()).players.map(p => p.swimmer), ['dog', 'frog', 'human']);
 });
