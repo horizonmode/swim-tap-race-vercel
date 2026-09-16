@@ -7,8 +7,11 @@
   let lobbies = [];
   let lastUpdated = null;
   let refreshTimer;
+  let filter = "all";
   $: activeCount = lobbies.filter(lobby => ["countdown", "racing"].includes(lobby.status)).length;
   $: playerCount = lobbies.reduce((total, lobby) => total + lobby.players, 0);
+  $: filteredLobbies = lobbies.filter(lobby => filter === "all" ||
+    (filter === "live" ? ["countdown", "racing"].includes(lobby.status) : lobby.status === filter));
 
   function connect() {
     const protocol = location.protocol === "https:" ? "wss:" : "ws:";
@@ -64,14 +67,20 @@
       <article><span>Swimmers</span><strong>{playerCount}</strong></article>
     </section>
     <section class="lobby-panel">
-      <div class="toolbar"><div><h2>Lobbies</h2><p>{lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Loading…'}</p></div><button type="button" on:click={refresh}>↻ Refresh</button></div>
+      <div class="toolbar"><div><h2>Lobby history</h2><p>{lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Loading…'}</p></div><button type="button" on:click={refresh}>↻ Refresh</button></div>
+      <div class="filters" aria-label="Filter lobby history">
+        {#each [["all", "All"], ["lobby", "Waiting"], ["live", "Live"], ["finished", "Finished"]] as option}
+          <button type="button" class:active={filter === option[0]} on:click={() => filter = option[0]}>{option[1]}</button>
+        {/each}
+      </div>
       {#if lobbies.length}
         <div class="table-wrap"><table><thead><tr><th>Lobby</th><th>Status</th><th>Swimmers</th><th>Created</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>
-          {#each lobbies as lobby}
+          {#each filteredLobbies as lobby}
             <tr><td data-label="Lobby"><strong>{lobby.name}</strong><small>{lobby.id}</small></td><td data-label="Status"><span class="status status-{lobby.status}"><i></i>{lobby.status}</span></td><td data-label="Swimmers"><strong>{lobby.players}</strong></td><td data-label="Created">{new Date(lobby.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</td><td><a class="open-link" href={`/race?room=${encodeURIComponent(lobby.id)}`}>Open lobby <span aria-hidden="true">→</span></a></td></tr>
           {/each}
+          {#if !filteredLobbies.length}<tr><td colspan="5" class="empty">No lobbies match this filter.</td></tr>{/if}
         </tbody></table></div>
-      {:else}<p class="empty">No lobbies have been created yet.</p>{/if}
+      {:else}<p class="empty">No lobby history yet.</p>{/if}
     </section>
   {/if}
 </main>
@@ -95,6 +104,9 @@
   .toolbar h2 { margin: 0; font-size: 24px; }
   .toolbar p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
   .toolbar button { min-height: 38px; padding: 8px 12px; background: #ffffff12; color: var(--text); font-size: 14px; }
+  .filters { display: flex; gap: 8px; padding: 14px 24px; border-bottom: 1px solid #ffffff12; overflow-x: auto; }
+  .filters button { min-height: 34px; padding: 6px 13px; border: 1px solid #ffffff12; border-radius: 999px; background: transparent; color: var(--muted); font-size: 13px; }
+  .filters button.active { border-color: #5dd7ff66; background: #5dd7ff18; color: var(--accent-2); }
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; text-align: left; }
   th, td { padding: 16px 24px; border-bottom: 1px solid #ffffff12; }
