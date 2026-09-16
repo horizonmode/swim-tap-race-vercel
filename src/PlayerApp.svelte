@@ -30,7 +30,17 @@
   let boost = null;
   let connected = false;
   let players = [];
-  const room = new URLSearchParams(location.search).get("room") || "";
+  const room = (new URLSearchParams(location.search).get("room") || "").trim();
+  let lobbyCode = "";
+
+  function openLobby() {
+    const code = lobbyCode.trim();
+    if (!code) return;
+    const url = new URL("/", location.href);
+    url.searchParams.set("room", code);
+    location.assign(url.href);
+  }
+
   function claimBoost() {
     if (connected && myId && race?.state === "racing" && boost && !boost.used && Date.now() >= boost.opensAt && Date.now() < boost.expiresAt && send("boost", { boostId: boost.id })) {
       boost = { ...boost, used: true };
@@ -177,7 +187,7 @@
 
   onMount(() => {
     document.body.className = "player-page";
-    connect();
+    if (room) connect();
     return () => {
       clearTimeout(reconnectTimer);
       clearInterval(countdownTimer);
@@ -188,7 +198,17 @@
 </script>
 
 <main class="player-shell">
-  {#if !myId}
+  {#if !room}
+    <section class="card lobby-notice">
+      <h1>Swim Tap Race</h1>
+      <p>please enter lobby code or scan QR provided by your host</p>
+      <form on:submit|preventDefault={openLobby}>
+        <label for="lobby-code">Lobby code</label>
+        <input id="lobby-code" name="room" bind:value={lobbyCode} placeholder="Enter lobby code" autocomplete="off" autocapitalize="none" spellcheck="false" required />
+        <button class="primary" type="submit" disabled={!lobbyCode.trim()}>Continue</button>
+      </form>
+    </section>
+  {:else if !myId}
     <JoinCard bind:name bind:selected={selectedSwimmer} error={joinError} onJoin={join} />
   {:else}
     <PlayerRaceCard name={joinedName} status={raceStatus} {hint} countdown={countdownValue} player={myPlayer} {race} {players} {myId} {moving} {motionMs} {boost} {connected}
@@ -198,4 +218,8 @@
 
 <style>
   .player-shell { width: min(100%, 460px); }
+  .lobby-notice { text-align: center; }
+  .lobby-notice h1 { margin: 8px 0; font-size: 34px; }
+  .lobby-notice p { color: var(--muted); line-height: 1.45; }
+  .lobby-notice form { display: grid; gap: var(--space-3); margin-top: 22px; text-align: left; }
 </style>

@@ -44,7 +44,9 @@
 <aside class="join-panel" aria-label="Join the race">
   <div class="join-qr" role="img" aria-label="QR code to join the race">{@html svg}</div>
   <div>
-    <strong>Scan to join</strong><p>{hint}</p>
+    <strong>Scan to join</strong>
+    {#if room}<p class="lobby-code">Lobby code: <span>{room}</span></p>{/if}
+    <p>{hint}</p>
     <a href={url || '/'} aria-label="Player join link">{url}</a>
     {#if urls.length > 1}
       <label>Network address<select bind:value={url} aria-label="Network address">{#each urls as address}<option value={address}>{address}</option>{/each}</select></label>
@@ -61,6 +63,8 @@
   .join-qr :global(svg) { display: block; width: 100%; height: 100%; background: white; border-radius: 8px; }
   strong { font-size: 22px; }
   p { color: var(--muted); margin: 0; }
+  .lobby-code { margin: 6px 0; }
+  .lobby-code span { color: var(--text); font-weight: 800; overflow-wrap: anywhere; }
   a { display: block; overflow-wrap: anywhere; margin-top: 6px; }
   label { display: block; margin-top: 8px; font-size: 12px; }
   select { margin-top: 4px; font-size: 14px; padding: 8px; }
