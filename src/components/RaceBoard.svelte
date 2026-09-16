@@ -4,7 +4,6 @@
   export let players = [];
   export let countdown = null;
   export let goVisible = false;
-  export let winnerText = '';
   const colors = ['#ff5f6d', '#ffd166', '#7bdff2', '#b2f7ef', '#cdb4db', '#ff9f1c', '#80ed99', '#f15bb5', '#9b5de5', '#00bbf9'];
   function capColor(player) {
     let hash = 0;
@@ -15,7 +14,6 @@
 <section class="scoreboard">
   {#if countdown}<div class="countdown">{countdown}</div>{/if}
   {#if goVisible}<div class="go-burst show">GO!</div>{/if}
-  {#if winnerText}<div class="winner">{winnerText}</div>{/if}
   <div class="lanes" class:compact={players.length > 10}>
     {#if !players.length}<div class="empty-state">Waiting for swimmers to join…</div>
     {:else}
@@ -40,9 +38,8 @@
   .compact .lane { grid-template-columns: minmax(72px, 110px) minmax(0, 1fr); }
   .compact .lane-name { font-size: clamp(13px, 1.25vw, 18px); }
   .empty-state { padding: 90px 20px; text-align: center; color: #e1faff; font-family: ui-monospace, monospace; font-size: 24px; text-shadow: 2px 2px #12547c; }
-  .countdown, .winner, .go-burst { position: absolute; z-index: 20; top: 30px; left: 50%; transform: translateX(-50%); text-align: center; font-weight: 900; }
+  .countdown, .go-burst { position: absolute; z-index: 20; top: 30px; left: 50%; transform: translateX(-50%); text-align: center; font-weight: 900; }
   .countdown { font-size: clamp(72px, 15vw, 180px); padding: 12px 34px; background: #02121ebe; border-radius: 24px; }
-  .winner { width: min(720px, 90%); font-size: clamp(34px, 6vw, 72px); padding: 28px; background: #02121ee6; border: 2px solid #ffffff2e; border-radius: 24px; }
   .go-burst { z-index: 30; font-size: clamp(84px, 16vw, 190px); line-height: 1; pointer-events: none; text-shadow: 0 8px 0 #00000029; animation: go-pop .75s ease-out both; }
   @keyframes go-pop { 0% { opacity: 0; transform: translateX(-50%) scale(.55); } 20% { opacity: 1; transform: translateX(-50%) scale(1.18); } 65% { opacity: 1; transform: translateX(-50%) scale(1); } 100% { opacity: 0; transform: translateX(-50%) scale(1.08); } }
   @media (max-width: 760px) { .lane { grid-template-columns: 90px minmax(0, 1fr); } .lane-name { padding: 6px; } .lane-name-dot { display: none; } .lanes.compact { grid-template-columns: minmax(0, 1fr); } }

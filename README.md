@@ -33,7 +33,7 @@ cp .env.example .env # first checkout only; keep your existing .env
 npm run dev
 ```
 
-The server automatically loads `.env`. Set `PRESENTER_KEY` to any non-empty word or phrase (up to 256 characters) and enter it on the presenter screen to unlock controls. Local play uses in-memory storage by default; set `LOCAL_REDIS=true` only when explicitly testing the shared Redis backend locally. `REDIS_URL` is still required for deployed Vercel WebSockets. `PORT` defaults to 3000 and `RACE_ROOM=local` keeps local testing separate from production. Restart the server after changing variables. `.env` is ignored by Git and cannot be downloaded from the local server.
+The server automatically loads `.env`. Set `PRESENTER_KEY` to any non-empty word or phrase (up to 256 characters) and enter it on the presenter screen to unlock controls. Local play uses in-memory storage by default, even when `REDIS_URL` is present. Set `USE_REDIS_LOCALLY=true` only when explicitly testing the shared Redis backend locally. `REDIS_URL` is still required for deployed Vercel WebSockets. `PORT` defaults to 3000 and `RACE_ROOM=local` keeps local testing separate from production. Restart the server after changing variables. `.env` is ignored by Git and cannot be downloaded from the local server.
 
 Then open:
 
@@ -48,7 +48,7 @@ Vercel can route player and presenter WebSockets to different Function instances
 
 The deployed backend now stores race state in Redis and publishes each update to all instances. Atomic compare-and-set updates preserve concurrent joins/taps and select one winner. Each instance also checks for missed updates every two seconds, and countdowns can resume if their original instance disappears. Reconnecting players can rejoin an existing race without losing progress.
 
-Redis is required for the deployed backend: without it, the UI reports a setup error rather than accepting players into isolated games. Local `npm run dev` uses Redis when `REDIS_URL` is set; otherwise it runs in memory.
+Redis is required for the deployed backend: without it, the UI reports a setup error rather than accepting players into isolated games. Local `npm run dev` always uses memory unless `USE_REDIS_LOCALLY=true`; enabling it also requires `REDIS_URL`.
 
 The lobby persists across redeploys; use **Clear players** before a new session. `RACE_ROOM` optionally sets a room namespace (use distinct values for separate games/projects sharing one database). All devices for a game must use the same deployment and room configuration.
 
