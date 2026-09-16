@@ -30,6 +30,7 @@
   let boost = null;
   let connected = false;
   let players = [];
+  const room = new URLSearchParams(location.search).get("room") || "";
   function claimBoost() {
     if (connected && myId && race?.state === "racing" && boost && !boost.used && Date.now() >= boost.opensAt && Date.now() < boost.expiresAt && send("boost", { boostId: boost.id })) {
       boost = { ...boost, used: true };
@@ -39,7 +40,9 @@
 
   function wsUrl() {
     const protocol = location.protocol === "https:" ? "wss:" : "ws:";
-    return `${protocol}//${location.host}/api/ws`;
+    const url = new URL(`${protocol}//${location.host}/api/ws`);
+    if (room) url.searchParams.set("room", room);
+    return url.href;
   }
 
   function send(type, data = {}) {

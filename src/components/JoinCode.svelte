@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import qrcode from 'qrcode-generator';
+  export let room = '';
   let urls = [];
   let url = '';
   let hint = 'Open the camera on your phone.';
@@ -28,6 +29,11 @@
           return;
         }
       } else urls = [new URL('/', location.href).href];
+      if (room) urls = urls.map(value => {
+        const target = new URL(value);
+        target.searchParams.set('room', room);
+        return target.href;
+      });
       url = urls[0];
       if (urls.length > 1) hint = 'Use the same Wi-Fi. If scanning fails, try another network address below.';
     }

@@ -14,9 +14,9 @@
 <div class="presenter-controls">
   {#if !authorized}
     <form class="presenter-login" on:submit={authenticate}>
-      <label for="presenterKey">Presenter key</label>
-      <input id="presenterKey" type="password" autocomplete="current-password" maxlength="256" bind:value={key} required>
-      <button type="submit">Unlock controls</button><p role="status">{authStatus}</p>
+      <label for="sessionKey">Session key</label>
+      <input id="sessionKey" type="password" autocomplete="current-password" maxlength="256" bind:value={key} required>
+      <button type="submit">Unlock lobby</button><p role="status">{authStatus}</p>
     </form>
   {:else}
     <div class="presenter-actions">

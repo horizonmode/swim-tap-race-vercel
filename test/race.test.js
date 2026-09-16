@@ -30,22 +30,64 @@ function database() {
   }
   return () => { const redis = client(); return { redis, store: createStore(redis, 'test') }; };
 }
-function socket(server) {
+function socket(server, room) {
   const ws = new EventEmitter();
   ws.readyState = 1;
   ws.messages = [];
   ws.send = raw => ws.messages.push(JSON.parse(raw));
   ws.close = () => { ws.readyState = 3; ws.emit('close'); };
-  server.wss.emit('connection', ws);
+  server.wss.emit('connection', ws, room ? { url: `/api/ws?room=${room}` } : undefined);
   ws.command = data => ws.emit('message', JSON.stringify(data));
   return ws;
 }
 const settle = () => new Promise(resolve => setImmediate(resolve));
 
+test('master code creates isolated lobbies with their own session keys', async t => {
+  const stores = new Map();
+  const registry = new Map();
+  const storage = room => {
+    if (!stores.has(room)) stores.set(room, createMemoryStore(room, registry));
+    return stores.get(room);
+  };
+  const server = createRaceServer(storage, undefined, { masterCode: 'master-code' });
+  t.after(() => server.close());
+  const first = socket(server, 'first-room');
+  const second = socket(server, 'second-room');
+  const missing = socket(server, 'missing-room');
+  await settle();
+  missing.command({ type: 'join', playerId: 'missing', playerToken: TOKEN, name: 'Missing' });
+  await settle();
+  assert.equal(missing.messages.find(message => message.type === 'joinResult').ok, false);
+  first.command({ type: 'session:create', masterKey: 'wrong', sessionKey: 'first-key', lobbyName: 'First lobby' });
+  assert.equal(first.messages.at(-1).ok, false);
+  first.command({ type: 'session:create', masterKey: 'master-code', sessionKey: 'first-key', lobbyName: 'First lobby' });
+  second.command({ type: 'session:create', masterKey: 'master-code', sessionKey: 'second-key', lobbyName: 'Second lobby' });
+  await settle();
+  assert.equal(first.messages.find(message => message.type === 'sessionCreated' && message.ok).ok, true);
+  first.command({ type: 'presenter:auth', key: 'second-key' });
+  assert.equal(first.messages.at(-1).ok, false);
+  first.command({ type: 'presenter:auth', key: 'first-key' });
+  assert.equal(first.messages.at(-1).ok, true);
+  const player = socket(server, 'first-room');
+  player.command({ type: 'join', playerId: 'one', playerToken: TOKEN, name: 'Room one' });
+  await settle();
+  assert.equal(first.messages.filter(message => message.type === 'gameState').at(-1).players.length, 1);
+  assert.equal(second.messages.filter(message => message.type === 'gameState').at(-1).players.length, 0);
+  const stored = await stores.get('first-room').store.read();
+  assert.notEqual(stored.sessionKeyHash, 'first-key');
+  assert.equal(stored.sessionKeyHash.length, 64);
+  const admin = socket(server);
+  await settle();
+  admin.command({ type: 'admin:auth', key: 'master-code' });
+  await settle();
+  const list = admin.messages.find(message => message.type === 'lobbyList').lobbies;
+  assert.deepEqual(list.map(lobby => lobby.name).sort(), ['First lobby', 'Second lobby']);
+});
+
 test('player join on one instance updates a presenter on another, including immediate join and reconnect', async t => {
   const storage = database();
-  const a = createRaceServer(storage, undefined, { presenterKey: 'test-presenter-key-000000000000000' });
-  const b = createRaceServer(storage, undefined, { presenterKey: KEY });
+  const a = createRaceServer(storage, undefined, { masterCode: 'test-presenter-key-000000000000000' });
+  const b = createRaceServer(storage, undefined, { masterCode: KEY });
   t.after(() => { a.close(); b.close(); });
   const presenter = socket(a);
   presenter.command({ type: 'presenter:auth', key: KEY });
@@ -193,7 +235,7 @@ test('character choices persist through reset and invalid choices fall back safe
 
 for (const [mode, getStorage] of [['memory', createMemoryStore], ['redis', database()]]) {
   test(`${mode}: reject every unauthorized presenter action, allow correct key`, async t => {
-    const server = createRaceServer(getStorage, undefined, { presenterKey: KEY });
+    const server = createRaceServer(getStorage, undefined, { masterCode: KEY });
     t.after(() => server.close());
     const player = socket(server);
     player.command({ type: 'join', playerId: 'victim', playerToken: TOKEN, name: 'Victim' });
@@ -261,7 +303,7 @@ test('connection cap, message rate and pending queue limits prevent unbounded wo
   let updates = 0;
   const slow = createMemoryStore();
   slow.store.update = () => { updates++; return new Promise(resolve => { release = resolve; }); };
-  const queued = createRaceServer(() => slow, undefined, { presenterKey: KEY });
+  const queued = createRaceServer(() => slow, undefined, { masterCode: KEY });
   t.after(() => queued.close());
   const client = socket(queued);
   await settle();
@@ -284,8 +326,8 @@ test('only exact allowed origins and the intended WebSocket path pass the upgrad
   assert.equal(allowedUpgrade({ url: '/other', headers: { origin: 'https://game.example' } }, origins), false);
 });
 
-test('missing presenter key fails closed and five wrong keys disconnect the client', async t => {
-  const server = createRaceServer(createMemoryStore, undefined, { presenterKey: '' });
+test('missing master code fails closed and five wrong keys disconnect the client', async t => {
+  const server = createRaceServer(createMemoryStore, undefined, { masterCode: '' });
   t.after(() => server.close());
   const client = socket(server);
   for (let i = 0; i < 5; i++) client.command({ type: 'presenter:auth', key: KEY });
@@ -307,9 +349,9 @@ test('an old connection token cannot tap for a player ID reused after clearing',
   assert.equal((await store.read()).players[0].distance, 1.2);
 });
 
-test('presenter keys accept a single character, words and phrases while rejecting incorrect values', async t => {
+test('master codes accept a single character, words and phrases while rejecting incorrect values', async t => {
   for (const key of ['a', 'swim', 'pool party', '泳ぐ']) {
-    const server = createRaceServer(createMemoryStore, undefined, { presenterKey: key });
+    const server = createRaceServer(createMemoryStore, undefined, { masterCode: key });
     t.after(() => server.close());
     const client = socket(server);
     client.command({ type: 'presenter:auth', key: key + 'wrong' });
@@ -341,7 +383,7 @@ test('delayed batches count eligible received taps exactly once, independent of 
 
 test('closing every connection preserves completed scoreboard until explicitly cleared', async t => {
   const memory = createMemoryStore();
-  const server = createRaceServer(() => memory, undefined, { presenterKey: KEY });
+  const server = createRaceServer(() => memory, undefined, { masterCode: KEY });
   t.after(() => server.close());
   const player = socket(server);
   player.command({ type: 'join', playerToken: TOKEN, playerId: 'finish', name: 'Finish' });

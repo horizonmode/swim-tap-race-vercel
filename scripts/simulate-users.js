@@ -64,7 +64,7 @@ Options:
   --join-delay=N     Milliseconds between joins (default: 40)
   --url=URL          WebSocket endpoint (default: localhost)
   --reset            Reset the race to the lobby before joining
-  --start            Start the race after all players join; uses PRESENTER_KEY
+  --start            Start the race after all players join; uses MASTER_CODE for the legacy room
   --help             Show this help
 
 Examples:
@@ -97,8 +97,8 @@ function presenterSocket() {
 }
 
 function resetRace() {
-    if (!process.env.PRESENTER_KEY) {
-        throw new Error("--reset requires PRESENTER_KEY in the environment or .env");
+    if (!process.env.MASTER_CODE) {
+        throw new Error("--reset requires MASTER_CODE in the environment or .env");
     }
 
     return new Promise((resolve, reject) => {
@@ -110,7 +110,7 @@ function resetRace() {
         }, 5000);
         sockets.add(presenter);
 
-        presenter.on("open", () => send(presenter, { type: "presenter:auth", key: process.env.PRESENTER_KEY }));
+        presenter.on("open", () => send(presenter, { type: "presenter:auth", key: process.env.MASTER_CODE }));
         presenter.on("message", raw => {
             let message;
             try { message = JSON.parse(raw); } catch { return; }
@@ -200,13 +200,13 @@ function maybeStartRace() {
         console.log(`all players joined; start the race manually or rerun with --start`);
         return;
     }
-    if (!process.env.PRESENTER_KEY) {
-        console.error("--start requires PRESENTER_KEY in the environment or .env");
+    if (!process.env.MASTER_CODE) {
+        console.error("--start requires MASTER_CODE in the environment or .env");
         return;
     }
     const presenter = presenterSocket();
     sockets.add(presenter);
-    presenter.on("open", () => send(presenter, { type: "presenter:auth", key: process.env.PRESENTER_KEY }));
+    presenter.on("open", () => send(presenter, { type: "presenter:auth", key: process.env.MASTER_CODE }));
     presenter.on("message", raw => {
         let message;
         try { message = JSON.parse(raw); } catch { return; }

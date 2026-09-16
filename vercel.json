@@ -14,6 +14,14 @@
     {
       "source": "/race",
       "destination": "/race.html"
+    },
+    {
+      "source": "/.admin",
+      "destination": "/admin.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin.html"
     }
   ]
 }

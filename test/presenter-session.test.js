@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createPresenterSession } from '../src/presenter-session.js';
 import { motionDuration } from '../src/swimmer-motion.js';
 
-test('presenter key survives form clearing and reconnect, but is discarded after rejection', () => {
+test('session key survives form clearing and reconnect, but is discarded after rejection', () => {
   const messages = [];
   const session = createPresenterSession((type, data) => { messages.push({ type, ...data }); return true; });
   let input = 'swim';

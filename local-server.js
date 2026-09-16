@@ -35,5 +35,7 @@ const allowedOrigins = new Set([
   ...(process.env.ALLOWED_ORIGINS || "").split(",").map(origin => origin.trim()).filter(Boolean)
 ]);
 const useRedis = process.env.USE_REDIS_LOCALLY === "true";
-const server = createRaceServer(useRedis ? undefined : createMemoryStore, handleRequest, { allowedOrigins }).server;
+const localLobbyRegistry = new Map();
+const createLocalStore = room => createMemoryStore(room, localLobbyRegistry);
+const server = createRaceServer(useRedis ? undefined : createLocalStore, handleRequest, { allowedOrigins }).server;
 server.listen(PORT, () => console.log(`Swim Tap Race: http://localhost:${PORT}  Presenter: http://localhost:${PORT}/race`));

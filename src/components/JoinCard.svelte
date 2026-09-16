@@ -10,11 +10,6 @@
 <section class="card">
   <div class="big-emoji">🏊</div><h1>Swim Tap Race</h1>
   <p>Enter your name, then tap as fast as you can when the race starts.</p>
-  <button
-    class="wellbeing-link"
-    type="button"
-    on:click={() => wellbeingDialog.showModal()}
-  >8 benefits of swimming <span aria-hidden="true">→</span></button>
   <form on:submit|preventDefault={onJoin}>
     <label for="name">Your name</label>
     <input id="name" bind:value={name} maxlength="18" autocomplete="nickname" placeholder="e.g. Seb">
@@ -22,6 +17,11 @@
     <button class="primary" type="submit">Join race</button>
     <p class="error" aria-live="polite">{error}</p>
   </form>
+  <button
+    class="wellbeing-link"
+    type="button"
+    on:click={() => wellbeingDialog.showModal()}
+  >8 benefits of swimming <span aria-hidden="true">→</span></button>
 </section>
 
 <dialog bind:this={wellbeingDialog} aria-labelledby="wellbeing-title">
@@ -36,17 +36,17 @@
   .big-emoji { font-size: 64px; text-align: center; }
   p { color: var(--muted); line-height: 1.45; }
   .wellbeing-link {
-    width: 100%;
     display: block;
-    padding: 12px 14px;
-    border: 1px solid #ffffff29;
-    border-radius: 14px;
-    background: #16496a;
-    color: var(--accent-2);
-    font-weight: 800;
+    min-height: 32px;
+    margin: 2px auto 0;
+    padding: 4px 8px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
     text-align: center;
   }
-  .wellbeing-link:hover { background: #1b577d; text-decoration: underline; }
+  .wellbeing-link:hover { color: var(--accent-2); text-decoration: underline; }
   dialog { width: min(720px, calc(100% - 28px)); max-height: calc(100dvh - 40px); padding: 30px 24px; border: 4px solid var(--accent-2); background: var(--panel); color: var(--text); box-shadow: 8px 8px 0 #031522; }
   dialog::backdrop { background: #021422dd; }
   .dialog-close { position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; padding: 0; border-radius: 0; background: #1b5271; color: white; font-size: 30px; }

@@ -8,7 +8,8 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 player: resolve(process.cwd(), "index.html"),
-                presenter: resolve(process.cwd(), "race.html")
+                presenter: resolve(process.cwd(), "race.html"),
+                admin: resolve(process.cwd(), "admin.html")
             }
         }
     }
